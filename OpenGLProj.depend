@@ -1,0 +1,80 @@
+# depslib dependency file v1.0
+1360027322 source:c:\dev\openglproj\main.c
+	<windows.h>
+	<gl/gl.h>
+	"CubeField.h"
+
+1360608238 c:\dev\openglproj\cubefield.h
+	<vector>
+	<math.h>
+
+1363398251 source:c:\dev\openglproj\main.cpp
+	<windows.h>
+	<gl/gl.h>
+	"include/VoxelField.h"
+	"include/MarchingCubes.h"
+
+1363402162 source:c:\dev\openglproj\src\marchingcubes.cpp
+	<set>
+	<stdio.h>
+	"MarchingCubes.h"
+
+1363398456 c:\dev\openglproj\include\marchingcubes.h
+
+1362311576 c:\dev\openglproj\voxelfield.h
+	<vector>
+	<math.h>
+
+1361403612 c:\dev\openglproj\include\\marchingcubes.h
+
+1344245012 c:\dev\openglproj\glew.h
+	<stddef.h>
+	<inttypes.h>
+	<stdint.h>
+	<inttypes.h>
+	<OpenGL/glu.h>
+	<GL/glu.h>
+
+1344245012 c:\dev\openglproj\wglew.h
+	<windows.h>
+
+1362436855 c:\dev\openglproj\wglext.h
+	<windows.h>
+
+1362436844 c:\dev\openglproj\glext.h
+	<windows.h>
+	<stddef.h>
+	<inttypes.h>
+	<inttypes.h>
+	<inttypes.h>
+	<stdint.h>
+	<stdint.h>
+	<inttypes.h>
+
+1362311576 c:\dev\openglproj\include\\voxelfield.h
+	<vector>
+	<math.h>
+
+1363219130 c:\dev\openglproj\include\voxelfield.h
+	<vector>
+	<math.h>
+
+1363552510 source:c:\dev\marchingcubes\main.cpp
+	<windows.h>
+	<gl/gl.h>
+	"include/VoxelField.h"
+	"include/MarchingCubes.h"
+
+1363547271 c:\dev\marchingcubes\include\voxelfield.h
+	<vector>
+	<math.h>
+
+1363553087 c:\dev\marchingcubes\include\marchingcubes.h
+
+1363553093 source:c:\dev\marchingcubes\src\marchingcubes.cpp
+	<set>
+	<stdio.h>
+	"include/MarchingCubes.h"
+
+1363551279 c:\dev\openglproj\\include\marchingcubes.h
+

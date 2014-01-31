@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_layout_file>
+	<ActiveTarget name="Debug" />
+	<File name="include\MarchingCubes.h" open="0" top="0" tabpos="2">
+		<Cursor position="5479" topLine="106" />
+	</File>
+	<File name="include\VoxelField.h" open="0" top="0" tabpos="2">
+		<Cursor position="406" topLine="0" />
+	</File>
+	<File name="main.cpp" open="0" top="0" tabpos="3">
+		<Cursor position="12701" topLine="368" />
+	</File>
+	<File name="src\MarchingCubes.cpp" open="0" top="0" tabpos="1">
+		<Cursor position="24848" topLine="694" />
+	</File>
+</CodeBlocks_layout_file>
