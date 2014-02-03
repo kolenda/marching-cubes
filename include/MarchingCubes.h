@@ -36,7 +36,7 @@ public:
     // 3D vector class storing float position
     struct  Vector3F {
         float f[3];
-        Vector3F& operator- (Vector3F& v1) {
+        Vector3F operator- (Vector3F& v1) {
             Vector3F res;
             res.f[0] = f[0] - v1.f[0];
             res.f[1] = f[1] - v1.f[1];
@@ -116,7 +116,7 @@ private:
 
     void        _codeToSignTable( int code, int* tab );
     bool        _vertexIsNegByAxis( int code, int axis );
-    Vector3F&   _getNormalFromBits( int bits );
+    Vector3F   _getNormalFromBits( int bits );
 
     // prints all values from triangles table - for debug purposes
     void        printTable();

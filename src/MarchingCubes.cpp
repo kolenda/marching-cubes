@@ -9,7 +9,6 @@
 #include <stdio.h>
 #include <string.h>
 #include "MarchingCubes.h"
-//include/
 
 inline bool _differentSign( int a, int b )
 {
@@ -48,17 +47,19 @@ int MarchingCubes::generateTriangles()
     for( int i = 1; i < 255; i++ ) {
         if( triangleTable[i].index < 1 ) {
 
-            int tris = _findSingleVertexTriangles(i);
-            tris = _findEdgeTriangles( i );
-            tris = _findHalfSplit( i );
-            tris = _findTripleVertex( i );
-            tris = _findFourVertex( i );
-            tris = _findSnake( i );
+            int tris = 0;
+            tris += _findSingleVertexTriangles(i);
+            tris += _findEdgeTriangles( i );
+            tris += _findHalfSplit( i );
+            tris += _findTripleVertex( i );
+            tris += _findFourVertex( i );
+            tris += _findSnake( i );
 
             _fixTriangles( i );
             triangleTable[i].index = i;
         }
     }
+    return 1;
 }
 
 int MarchingCubes::_bitsToCode( float verts[8] )
@@ -688,6 +689,10 @@ int MarchingCubes::fillInTriangles( MarchingCubes::TriangleF tris[8] )
     MarchingCubesCase &cubeCase = getCaseFromValues();
     usageStats[cubeCase.index]++;
 
+//if( cubeCase.numTri > 2 ){
+//int x = 5;
+//}
+
     int triNum = 0;
     for( ; triNum < cubeCase.numTri; triNum++ ) {
         int e1 = cubeCase.tris[triNum][0];
@@ -732,7 +737,7 @@ bool MarchingCubes::_vertexIsNegByAxis( int code, int axis )
     return true;
 }
 
-MarchingCubes::Vector3F& MarchingCubes::_getNormalFromBits( int bits )
+MarchingCubes::Vector3F MarchingCubes::_getNormalFromBits( int bits )
 {
     MarchingCubes::Vector3F res;
 
