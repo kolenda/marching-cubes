@@ -147,10 +147,20 @@ int MarchingCubes::_getEdgeBySymmetry( int edge, int axis )
     return -1;
 }
 
-void MarchingCubes::setValues( float vert[8] )
+void MarchingCubes::setValues( Cube2& cube )	//float vert[8] )
 {
     for( int v = 0; v < 8; v++ )
-        vertex[v] = vert[v];
+        vertex[v] = cube.getVec(v);
+        //vert[v];
+}
+
+void MarchingCubes::setOffsets( float sizex, float sizey, float sizez )
+{
+	sizeX = sizex;
+	sizeY = sizey;
+	sizeZ = sizez;
+
+	sizePlane = sizeX * sizeY;
 }
 
 MarchingCubes::Vector3F MarchingCubes::getHalfEdge( int edgeNum )

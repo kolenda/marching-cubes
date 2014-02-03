@@ -14,13 +14,17 @@ VoxelField      cf;
 
 bool lighting = true;
 bool anim = true;
-bool drawEdges = false;
+bool drawEdgesBool = false;
 bool print = false;
 float phase = 0.0f;
 
 float sideAngle =   -45.0f;
 float upAngle =   45.0f;
 float zoomOut   = 40.0f;
+
+int	GRID_SIZE_X = 40;
+int GRID_SIZE_Y = 40;
+int GRID_SIZE_Z = 40;
 
 GLfloat ambientColor[] = {0.2f, 0.2f, 0.2f, 1.0f};
 GLfloat lightColorRed[] = {1.0f, 0.0f, 0.0f, 1.0f};
@@ -144,6 +148,25 @@ void drawTris( float x, float y, float z, MarchingCubes::TriangleF* tris, int tr
 	}
 	glEnd();
 }
+void drawEdges( float x, float y, float z, MarchingCubes::TriangleF* tris, int triNum )
+{
+	//  triangle edges
+	glBegin(GL_LINES);
+	for( int t = 0; t < triNum; t++ ) {
+		MarchingCubes::TriangleF&     tri = tris[t];
+
+		glColor3f( 0.0f, 0.0f, 0.0f );
+		glVertex3f( tri.v[0].f[0]+x, tri.v[0].f[1]+y, tri.v[0].f[2]+z );
+		glVertex3f( tri.v[1].f[0]+x, tri.v[1].f[1]+y, tri.v[1].f[2]+z );
+
+		glVertex3f( tri.v[1].f[0]+x, tri.v[1].f[1]+y, tri.v[1].f[2]+z );
+		glVertex3f( tri.v[2].f[0]+x, tri.v[2].f[1]+y, tri.v[2].f[2]+z );
+
+		glVertex3f( tri.v[2].f[0]+x, tri.v[2].f[1]+y, tri.v[2].f[2]+z );
+		glVertex3f( tri.v[0].f[0]+x, tri.v[0].f[1]+y, tri.v[0].f[2]+z );
+	}
+	glEnd();
+}
 
 int updateVoxelField( float phase )
 {
@@ -170,39 +193,36 @@ void iterate()
 	for( int y = 0; y < cf.getSizeY()-1; y++ )
 	for( int z = 0; z < cf.getSizeZ()-1; z++ )
 	{
-		Cube cube = cf.getCube( x, y, z );
-		if( cube.notEmpty() ) {
+		Cube2 cube = cf.getCube( x, y, z );
+		cube.setGridSize( GRID_SIZE_X, GRID_SIZE_Y, GRID_SIZE_Z );
+
+		if( cube.notEmpty() )
+		{
 			MarchingCubes::TriangleF     tris[8];
 
-			march.setValues( cube.vec );
+			march.setValues( cube );	//.vec );
 			int triNum = march.fillInTriangles( tris );
 
 			if( triNum )
 			{
 				drawTris( x, y, z, tris, triNum );
 
-/*						if( drawEdges ) {
-				//  triangle edges
-					glBegin(GL_LINES);
-					for( int t = 0; t < triNum; t++ ) {
-						MarchingCubes::TriangleF&     tri = tris[t];
-
-						glColor3f( 0.0f, 0.0f, 0.0f );
-						glVertex3f( tri.v[0].f[0]+x, tri.v[0].f[1]+y, tri.v[0].f[2]+z );
-						glVertex3f( tri.v[1].f[0]+x, tri.v[1].f[1]+y, tri.v[1].f[2]+z );
-
-						glVertex3f( tri.v[1].f[0]+x, tri.v[1].f[1]+y, tri.v[1].f[2]+z );
-						glVertex3f( tri.v[2].f[0]+x, tri.v[2].f[1]+y, tri.v[2].f[2]+z );
-
-						glVertex3f( tri.v[2].f[0]+x, tri.v[2].f[1]+y, tri.v[2].f[2]+z );
-						glVertex3f( tri.v[0].f[0]+x, tri.v[0].f[1]+y, tri.v[0].f[2]+z );
-					}
-					glEnd();
+/*				if( drawEdgesBool ) {
+					drawEdges( x, y, z, tris, triNum );
 				}*/
 			} //if triNum
 		}
 	}
 }
+
+void drawFrame()
+{
+	setupLight( lighting );
+	setView();
+
+	iterate();
+}
+
 
 void printUsageStats()
 {
@@ -282,7 +302,8 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
 		march.init();
 		cf.setSize(	//				5, 5, 5 );
-				40, 40, 40 );
+				GRID_SIZE_X, GRID_SIZE_Y, GRID_SIZE_Z );
+//				40, 40, 40 );
 //				10, 10, 10 );
 
 
@@ -313,19 +334,12 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
             /* OpenGL animation code goes here */
 
+
             glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            setupLight( lighting );
-            setView();
 
-//            glBegin(GL_TRIANGLES);
-  //              glColor3f(1.0f, 0.0f, 0.0f);   glVertex2f(0.0f,   10.0f);
-    //            glColor3f(0.0f, 1.0f, 0.0f);   glVertex2f(8.7f,  -5.0f);
-      //          glColor3f(0.0f, 0.0f, 1.0f);   glVertex2f(-8.7f, -5.0f);
-        //    glEnd();
-
-		iterate();
+				drawFrame();
 
 //            glPopMatrix();
             print = false;
@@ -398,7 +412,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                     anim = !anim;
                 break;
                 case 'E':
-                    drawEdges = !drawEdges;
+                    drawEdgesBool = !drawEdgesBool;
                 break;
             }
         }

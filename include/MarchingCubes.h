@@ -30,8 +30,16 @@
 #ifndef MARCHINGCUBES_H
 #define MARCHINGCUBES_H
 
+#include "VoxelField.h"
+
 class MarchingCubes
 {
+	int sizeX;
+	int sizeY;
+	int sizeZ;
+
+	int sizePlane;
+
 public:
     // 3D vector class storing float position
     struct  Vector3F {
@@ -63,6 +71,8 @@ public:
         TriangleI tris[10];
         Vector3F normal;
     };
+
+	void	setOffsets( float sizex, float sizey, float sizez );
 
 private:
     // main table storing all geometry data, it's generated during initialization and used for rendering
@@ -128,7 +138,7 @@ public:
     void init();
 
     // sets corner values
-    void setValues( float vert[8] );
+    void setValues( Cube2& cube );	//float vert[8] );
 
     MarchingCubesCase&    getCase( int code ){
         return triangleTable[code];
