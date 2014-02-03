@@ -133,7 +133,7 @@ public:
     }
 
     // this method gets proper values forming a cube and returns it in a helper class
-    Cube&    getCube( int x, int y, int z ) {
+    Cube    getCube( int x, int y, int z ) {
         float   vTab[8];
 
         if( x < sizeX-1 && y < sizeY-1 && z < sizeZ-1 ) {
