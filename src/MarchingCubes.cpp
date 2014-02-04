@@ -23,8 +23,19 @@ inline bool _sameSign( int a, int b )
     return !_differentSign( a, b );
 }
 
+int _getBitNum( unsigned short number )
+{
+    unsigned short bits = 0;
+    while( number > 0 ) {
+        unsigned short mask = ~(1<<bits);
+        number &= mask;
+        bits++;
+    }
+    return bits;
+}
 
-MarchingCubes::MarchingCubes()
+
+MarchingCubes::MarchingCubes( VoxelField& f ) : field(f)
 {
     memset( usageStats, 0, sizeof(usageStats) );
 }
@@ -55,7 +66,7 @@ int MarchingCubes::generateTriangles()
             tris += _findFourVertex( i );
             tris += _findSnake( i );
 
-            _fixTriangles( i );
+            int fixed = _fixTriangles( i );
             triangleTable[i].index = i;
         }
     }
@@ -154,6 +165,7 @@ void MarchingCubes::setValues( Cube2& cube )	//float vert[8] )
         //vert[v];
 }
 
+//	TODO: to remove - use cf
 void MarchingCubes::setOffsets( float sizex, float sizey, float sizez )
 {
 	sizeX = sizex;
@@ -216,6 +228,24 @@ bool MarchingCubes::_oneBitDiff( int v1, int v2 )
         return true;
     return false;
 }
+bool MarchingCubes::_twoBitsDiff( int v1, int v2 )
+{
+    int diff = v1 ^ v2;    //  XOR
+    if( diff == 3 || diff == 5 || diff == 6 )
+        return true;
+    return false;
+}
+
+int _findCommonAxis( int v1, int v2 )
+{
+    if( v1&1 == v2&1 )
+        return 0;
+    if( v1&2 == v2&2 )
+        return 1;
+    if( v1&4 == v2&4 )
+        return 2;
+    return -1;
+}
 
 void MarchingCubes::_fillVertices()
 {
@@ -277,6 +307,7 @@ int MarchingCubes::_findSingleVertexTriangles( int code )
     int signTab[8];
     _codeToSignTable( code, signTab );
 
+    bool singleVertexMap[8] = {false};
     for( int v = 0; v < 8; v++ ) {
         int vRefl[3];
         for( int ax = 0; ax < 3; ax++ )
@@ -288,11 +319,13 @@ int MarchingCubes::_findSingleVertexTriangles( int code )
             signTab[vRefl[2]] < 0 )
             {
                 MarchingCubesCase& cubeCase = triangleTable[code];
-                cubeCase.normal = _getNormalFromBits( 7-v );
+//                cubeCase.normal = _getNormalFromBits( 7-v );
+                cubeCase.normal[cubeCase.numTri] = _getNormalFromBits( 7-v );
                 cubeCase.tris[ cubeCase.numTri ][0] = _findEdge( v, vRefl[0] );
                 cubeCase.tris[ cubeCase.numTri ][1] = _findEdge( v, vRefl[1] );
                 cubeCase.tris[ cubeCase.numTri ][2] = _findEdge( v, vRefl[2] );
 
+                singleVertexMap[v] = true;
                 cubeCase.numTri++;
                 counter++;
             }
@@ -302,15 +335,35 @@ int MarchingCubes::_findSingleVertexTriangles( int code )
             signTab[vRefl[2]] >= 0 )
             {
                 MarchingCubesCase& cubeCase = triangleTable[code];
-                cubeCase.normal = _getNormalFromBits( //7-
-                                                        v );
+//                cubeCase.normal = _getNormalFromBits( //7-v );
+                cubeCase.normal[cubeCase.numTri] = _getNormalFromBits( v );
                 cubeCase.tris[ cubeCase.numTri ][0] = _findEdge( v, vRefl[0] );
                 cubeCase.tris[ cubeCase.numTri ][1] = _findEdge( v, vRefl[1] );
                 cubeCase.tris[ cubeCase.numTri ][2] = _findEdge( v, vRefl[2] );
 
+                singleVertexMap[v] = true;
                 cubeCase.numTri++;
                 counter++;
+
+                for( int i = 0; i < v; i++ ) {
+                    if( singleVertexMap[i] && _twoBitsDiff(v,i) ) {
+                                 if( cubeCase.numTri > 15 ) {
+                                    int x = 5;
+                                 }
+                        _capSingleVertexPlane( triangleTable[code], i, v );
+                    }
+                }
             }
+    }
+    // ambigiour case
+    for( int i = 0; i < 7; i++ )
+    for( int j = i+1; j < 8; j++ )
+    {
+        if( singleVertexMap[i] && singleVertexMap[j] ) {
+            if( _twoBitsDiff(i,j) ) {
+                int axis = _findCommonAxis(i,j);
+            }
+        }
     }
     return counter;
 }
@@ -348,14 +401,22 @@ int MarchingCubes::_findEdgeTriangles( int code )
         if( !failed ) {
             MarchingCubesCase& cubeCase = triangleTable[code];
             if( signTab[v1] < 0 )
-                cubeCase.normal = _getNormalFromBits(v1);
+//                cubeCase.normal = _getNormalFromBits(v1);
+                cubeCase.normal[cubeCase.numTri] = _getNormalFromBits(v1);
             else
-                cubeCase.normal = _getNormalFromBits(7-v1);
+//                cubeCase.normal = _getNormalFromBits(7-v1);
+                cubeCase.normal[cubeCase.numTri] = _getNormalFromBits(7-v1);
+
             cubeCase.tris[ cubeCase.numTri ][0] = _findEdge( v1, _getVertexBySymmetry(v1,(edgeAxis+1)%3) );
             cubeCase.tris[ cubeCase.numTri ][1] = _findEdge( v1, _getVertexBySymmetry(v1,(edgeAxis+2)%3) );
             cubeCase.tris[ cubeCase.numTri ][2] = _findEdge( v2, _getVertexBySymmetry(v2,(edgeAxis+2)%3) );
-
             cubeCase.numTri++;
+
+            if( signTab[v1] < 0 )
+                cubeCase.normal[cubeCase.numTri] = _getNormalFromBits(v1);
+            else
+                cubeCase.normal[cubeCase.numTri] = _getNormalFromBits(7-v1);
+
             cubeCase.tris[ cubeCase.numTri ][0] = _findEdge( v2, _getVertexBySymmetry(v2,(edgeAxis+2)%3) );
             cubeCase.tris[ cubeCase.numTri ][1] = _findEdge( v2, _getVertexBySymmetry(v2,(edgeAxis+1)%3) );
             cubeCase.tris[ cubeCase.numTri ][2] = _findEdge( v1, _getVertexBySymmetry(v1,(edgeAxis+1)%3) );
@@ -419,7 +480,8 @@ int MarchingCubes::_findHalfSplit( int code )
             int endEdge     = _getEdgeBySymmetry( edge2, (axis+1)%3 );
 
             MarchingCubesCase& cubeCase = triangleTable[code];
-            cubeCase.normal = _getNormalFromBits( 0 );
+//            cubeCase.normal = _getNormalFromBits( 0 );
+            cubeCase.normal[cubeCase.numTri] = _getNormalFromBits( 0 );
             cubeCase.tris[ cubeCase.numTri ][0] = startEdge;
             cubeCase.tris[ cubeCase.numTri ][1] = edge1;
             cubeCase.tris[ cubeCase.numTri ][2] = edge2;
@@ -442,11 +504,14 @@ int MarchingCubes::_findHalfSplit( int code )
             int endEdge     = _getEdgeBySymmetry( edge2, (axis+1)%3 );
 
             MarchingCubesCase& cubeCase = triangleTable[code];
-            cubeCase.normal = _getNormalFromBits( 7 );
+//            cubeCase.normal = _getNormalFromBits( 7 );
+            cubeCase.normal[cubeCase.numTri] = _getNormalFromBits( 7 );
             cubeCase.tris[ cubeCase.numTri ][0] = startEdge;
             cubeCase.tris[ cubeCase.numTri ][1] = edge1;
             cubeCase.tris[ cubeCase.numTri ][2] = edge2;
             cubeCase.numTri++;
+
+            cubeCase.normal[cubeCase.numTri] = _getNormalFromBits( 7 );
             cubeCase.tris[ cubeCase.numTri ][0] = edge1;
             cubeCase.tris[ cubeCase.numTri ][1] = endEdge;
             cubeCase.tris[ cubeCase.numTri ][2] = edge2;
@@ -489,17 +554,20 @@ int MarchingCubes::_findTripleVertex( int code )
                 signTab[vRefl12] > 0 )
             {
                 MarchingCubesCase& cubeCase = triangleTable[code];
-                cubeCase.normal = _getNormalFromBits( v );
+//                cubeCase.normal = _getNormalFromBits( v );
+                cubeCase.normal[cubeCase.numTri] = _getNormalFromBits( v );
                 cubeCase.tris[ cubeCase.numTri ][0] = _findEdge(vRefl2, vRefl2A);
                 cubeCase.tris[ cubeCase.numTri ][1] = _findEdge(vRefl1, vRefl1A);
                 cubeCase.tris[ cubeCase.numTri ][2] = _findEdge(vRefl1, vRefl12);
                 cubeCase.numTri++;
 
+                cubeCase.normal[cubeCase.numTri] = _getNormalFromBits( v );
                 cubeCase.tris[ cubeCase.numTri ][0] = _findEdge(vRefl1, vRefl12);
                 cubeCase.tris[ cubeCase.numTri ][1] = _findEdge(vRefl2, vRefl12);
                 cubeCase.tris[ cubeCase.numTri ][2] = _findEdge(vRefl2, vRefl2A);
                 cubeCase.numTri++;
 
+                cubeCase.normal[cubeCase.numTri] = _getNormalFromBits( v );
                 cubeCase.tris[ cubeCase.numTri ][0] = _findEdge(vRefl2, vRefl2A);
                 cubeCase.tris[ cubeCase.numTri ][1] = _findEdge(v, vReflA);
                 cubeCase.tris[ cubeCase.numTri ][2] = _findEdge(vRefl1, vRefl1A);
@@ -517,17 +585,20 @@ int MarchingCubes::_findTripleVertex( int code )
                     signTab[vRefl12] < 0 )
             {
                 MarchingCubesCase& cubeCase = triangleTable[code];
-                cubeCase.normal = _getNormalFromBits( 7-v );
+//                cubeCase.normal = _getNormalFromBits( 7-v );
+                cubeCase.normal[cubeCase.numTri] = _getNormalFromBits( 7-v );
                 cubeCase.tris[ cubeCase.numTri ][0] = _findEdge(vRefl2, vRefl2A);
                 cubeCase.tris[ cubeCase.numTri ][1] = _findEdge(vRefl1, vRefl12);
                 cubeCase.tris[ cubeCase.numTri ][2] = _findEdge(vRefl1, vRefl1A);
                 cubeCase.numTri++;
 
+                cubeCase.normal[cubeCase.numTri] = _getNormalFromBits( 7-v );
                 cubeCase.tris[ cubeCase.numTri ][0] = _findEdge(vRefl1, vRefl12);
                 cubeCase.tris[ cubeCase.numTri ][1] = _findEdge(vRefl2, vRefl2A);
                 cubeCase.tris[ cubeCase.numTri ][2] = _findEdge(vRefl2, vRefl12);
                 cubeCase.numTri++;
 
+                cubeCase.normal[cubeCase.numTri] = _getNormalFromBits( 7-v );
                 cubeCase.tris[ cubeCase.numTri ][0] = _findEdge(vRefl2, vRefl2A);
                 cubeCase.tris[ cubeCase.numTri ][1] = _findEdge(vRefl1, vRefl1A);
                 cubeCase.tris[ cubeCase.numTri ][2] = _findEdge(v, vReflA);
@@ -568,22 +639,26 @@ int MarchingCubes::_findFourVertex( int code )
             signTab[vRefl123] > 0 )
         {
             MarchingCubesCase& cubeCase = triangleTable[code];
-            cubeCase.normal = _getNormalFromBits( v );
+//            cubeCase.normal = _getNormalFromBits( v );
+            cubeCase.normal[cubeCase.numTri] = _getNormalFromBits( v );
             cubeCase.tris[ cubeCase.numTri ][0] = _findEdge(vRefl1, vRefl13);
             cubeCase.tris[ cubeCase.numTri ][1] = _findEdge(vRefl1, vRefl12);
             cubeCase.tris[ cubeCase.numTri ][2] = _findEdge(vRefl2, vRefl12);
             cubeCase.numTri++;
 
+            cubeCase.normal[cubeCase.numTri] = _getNormalFromBits( v );
             cubeCase.tris[ cubeCase.numTri ][0] = _findEdge(vRefl3, vRefl13);
             cubeCase.tris[ cubeCase.numTri ][1] = _findEdge(vRefl1, vRefl13);
             cubeCase.tris[ cubeCase.numTri ][2] = _findEdge(vRefl2, vRefl12);
             cubeCase.numTri++;
 
+            cubeCase.normal[cubeCase.numTri] = _getNormalFromBits( v );
             cubeCase.tris[ cubeCase.numTri ][0] = _findEdge(vRefl3, vRefl13);
             cubeCase.tris[ cubeCase.numTri ][1] = _findEdge(vRefl2, vRefl12);
             cubeCase.tris[ cubeCase.numTri ][2] = _findEdge(vRefl2, vRefl23);
             cubeCase.numTri++;
 
+            cubeCase.normal[cubeCase.numTri] = _getNormalFromBits( v );
             cubeCase.tris[ cubeCase.numTri ][0] = _findEdge(vRefl3, vRefl13);
             cubeCase.tris[ cubeCase.numTri ][1] = _findEdge(vRefl2, vRefl23);
             cubeCase.tris[ cubeCase.numTri ][2] = _findEdge(vRefl3, vRefl23);
@@ -640,19 +715,22 @@ int MarchingCubes::_findSnake( int code )
                     int vRefl23 = _getVertexBySymmetry( vRefl2, ax3 );
 
                     MarchingCubesCase& cubeCase = triangleTable[code];
-                    cubeCase.normal = _getNormalFromBits( vRefl1 );
+//                    cubeCase.normal = _getNormalFromBits( vRefl1 );
+                    cubeCase.normal[cubeCase.numTri] = _getNormalFromBits( vRefl1 );
                     cubeCase.tris[ cubeCase.numTri ][0] = _findEdge(v, vRefl3);
                     cubeCase.tris[ cubeCase.numTri ][1] = _findEdge(vRefl1, vRefl13);
                     cubeCase.tris[ cubeCase.numTri ][2] = _findEdge(vRefl123, vRefl23);
                     cubeCase.numTri++;
 
-                    cubeCase.normal = _getNormalFromBits( vRefl1 );
+//                    cubeCase.normal = _getNormalFromBits( vRefl1 );
+                    cubeCase.normal[cubeCase.numTri] = _getNormalFromBits( vRefl1 );
                     cubeCase.tris[ cubeCase.numTri ][0] = _findEdge(v, vRefl2);
                     cubeCase.tris[ cubeCase.numTri ][1] = _findEdge(v, vRefl3);
                     cubeCase.tris[ cubeCase.numTri ][2] = _findEdge(vRefl123, vRefl23);
                     cubeCase.numTri++;
 
-                    cubeCase.normal = _getNormalFromBits( vRefl1 );
+//                    cubeCase.normal = _getNormalFromBits( vRefl1 );
+                    cubeCase.normal[cubeCase.numTri] = _getNormalFromBits( vRefl1 );
                     cubeCase.tris[ cubeCase.numTri ][0] = _findEdge(vRefl2, vRefl12);
                     cubeCase.tris[ cubeCase.numTri ][1] = _findEdge(v, vRefl2);
                     cubeCase.tris[ cubeCase.numTri ][2] = _findEdge(vRefl123, vRefl23);
@@ -669,11 +747,12 @@ int MarchingCubes::_findSnake( int code )
 
 int MarchingCubes::_fixTriangles( int code )
 {
+    MarchingCubesCase& cubeCase = triangleTable[code];
     int counter = 0;
-    for( int t = 0; t < triangleTable[code].numTri; t++ ) {
-        int e1 = triangleTable[code].tris[t][0];
-        int e2 = triangleTable[code].tris[t][1];
-        int e3 = triangleTable[code].tris[t][2];
+    for( int t = 0; t < cubeCase.numTri; t++ ) {
+        int e1 = cubeCase.tris[t][0];
+        int e2 = cubeCase.tris[t][1];
+        int e3 = cubeCase.tris[t][2];
 
         Vector3F v1 = getHalfEdge(e1);
         Vector3F v2 = getHalfEdge(e2);
@@ -684,11 +763,14 @@ int MarchingCubes::_fixTriangles( int code )
         Vector3F normal;
         getCrossProduct( delta1.f, delta2.f, normal.f );
 
-        if( dotProduct(normal, triangleTable[code].normal) < 0 ) {
-            int tmp = triangleTable[code].tris[t][1];
-            triangleTable[code].tris[t][1] = triangleTable[code].tris[t][2];
-            triangleTable[code].tris[t][2] = tmp;
+        if( dotProduct(normal, cubeCase.normal[t]) < 0 ) {
+            int tmp = cubeCase.tris[t][1];
+            cubeCase.tris[t][1] = cubeCase.tris[t][2];
+            cubeCase.tris[t][2] = tmp;
             counter++;
+        }
+        else {
+        int x = 5;
         }
     }
     return counter;
@@ -699,10 +781,6 @@ int MarchingCubes::fillInTriangles( MarchingCubes::TriangleF tris[8] )
     MarchingCubesCase &cubeCase = getCaseFromValues();
     usageStats[cubeCase.index]++;
 
-//if( cubeCase.numTri > 2 ){
-//int x = 5;
-//}
-
     int triNum = 0;
     for( ; triNum < cubeCase.numTri; triNum++ ) {
         int e1 = cubeCase.tris[triNum][0];
@@ -712,17 +790,26 @@ int MarchingCubes::fillInTriangles( MarchingCubes::TriangleF tris[8] )
         Vector3F vec2 = getVertexFromEdge( e2 );
         Vector3F vec3 = getVertexFromEdge( e3 );
 
-        tris[triNum].v[0].f[0] = vec1.f[0];
-        tris[triNum].v[0].f[1] = vec1.f[1];
-        tris[triNum].v[0].f[2] = vec1.f[2];
+        tris[triNum].v[0].pos.f[0] = vec1.f[0];
+        tris[triNum].v[0].pos.f[1] = vec1.f[1];
+        tris[triNum].v[0].pos.f[2] = vec1.f[2];
 
-        tris[triNum].v[1].f[0] = vec2.f[0];
-        tris[triNum].v[1].f[1] = vec2.f[1];
-        tris[triNum].v[1].f[2] = vec2.f[2];
+        tris[triNum].v[1].pos.f[0] = vec2.f[0];
+        tris[triNum].v[1].pos.f[1] = vec2.f[1];
+        tris[triNum].v[1].pos.f[2] = vec2.f[2];
 
-        tris[triNum].v[2].f[0] = vec3.f[0];
-        tris[triNum].v[2].f[1] = vec3.f[1];
-        tris[triNum].v[2].f[2] = vec3.f[2];
+        tris[triNum].v[2].pos.f[0] = vec3.f[0];
+        tris[triNum].v[2].pos.f[1] = vec3.f[1];
+        tris[triNum].v[2].pos.f[2] = vec3.f[2];
+
+        Vector3F  delta1 = vec2 - vec1;
+        Vector3F  delta2 = vec3 - vec1;
+
+        Vector3F  normal;
+        getCrossProduct( delta1.f, delta2.f, normal.f );
+        tris[triNum].v[0].norm = normal;
+        tris[triNum].v[1].norm = normal;
+        tris[triNum].v[2].norm = normal;
     }
     return triNum;
 }
@@ -760,3 +847,45 @@ MarchingCubes::Vector3F MarchingCubes::_getNormalFromBits( int bits )
     }
     return res;
 }
+
+
+void MarchingCubes::_getPlaneEdges( int v1, int v2, int edges[4] )
+{
+    int eCounter = 0;
+
+    for( int i = 0; i < 8; i++ )
+        if( _oneBitDiff(i,v1) && _oneBitDiff(i,v2) )
+        {
+            int e1 = _findEdge(i,v1);
+            int e2 = _findEdge(i,v2);
+            edges[eCounter++] = e1;
+            edges[eCounter++] = e2;
+        }
+
+    assert( eCounter == 4 );
+}
+int MarchingCubes::_capSingleVertexPlane( MarchingCubesCase& cubeCase, int v1, int v2 )
+{
+    int edges[4] = {-1};
+    _getPlaneEdges( v1, v2, edges );
+
+    int counter = 0;
+    Vector3F normal = _getNormalFromBits( v1 );
+
+    cubeCase.normal[cubeCase.numTri] = normal;
+    cubeCase.tris[ cubeCase.numTri ][0] = edges[0];
+    cubeCase.tris[ cubeCase.numTri ][1] = edges[1];
+    cubeCase.tris[ cubeCase.numTri ][2] = edges[2];
+    cubeCase.numTri++;
+
+    cubeCase.normal[cubeCase.numTri] = normal;
+    cubeCase.tris[ cubeCase.numTri ][0] = edges[3];
+    cubeCase.tris[ cubeCase.numTri ][1] = edges[1];
+    cubeCase.tris[ cubeCase.numTri ][2] = edges[2];
+    cubeCase.numTri++;
+
+    counter += 2;
+
+    return counter;
+}
+

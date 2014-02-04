@@ -1,16 +1,29 @@
 #include <stdio.h>
 #include <windows.h>
 #include <gl/gl.h>
+#include <string>
 
 #include "include/VoxelField.h"
 #include "include/MarchingCubes.h"
+
 
 LRESULT CALLBACK WindowProc(HWND, UINT, WPARAM, LPARAM);
 void EnableOpenGL(HWND hwnd, HDC*, HGLRC*);
 void DisableOpenGL(HWND, HDC, HGLRC);
 
-MarchingCubes   march;
+//GLvoid *font_style = GLUT_BITMAP_TIMES_ROMAN_24;
+
+GLuint axesVertexBuffer = 0;
+GLuint axesIndexBuffer = 0;
+
+GLuint trianglesVertexBuffer = 0;
+GLuint trianglesIndexedVertexBuffer = 0;
+GLuint trianglesIndexedIndexBuffer = 0;
+
 VoxelField      cf;
+MarchingCubes   march(cf);
+//MarchingCubes   march;
+//VoxelField      cf;
 
 bool lighting = true;
 bool anim = true;
@@ -21,6 +34,9 @@ float phase = 0.0f;
 float sideAngle =   -45.0f;
 float upAngle =   45.0f;
 float zoomOut   = 40.0f;
+
+int currentAxis = 0;
+int debugAxes[3] = {0,0,0};
 
 int	GRID_SIZE_X = 40;
 int GRID_SIZE_Y = 40;
@@ -40,6 +56,20 @@ GLfloat lightPosGreen[] = {0.0f, 40.0f, 0.0f, 1.0f};
 GLfloat lightPosBlue[] = {0.0f, 0.0f, 40.0f, 1.0f};
 GLfloat lightPosWhite[] = {0.0f, 0.0f, 0.0f, 1.0f};
 
+
+struct AxisVert {
+    GLfloat pos[3];
+    GLubyte color[3];
+};
+
+void printText( float x, float y, std::string str )
+{
+    int len = str.length();
+	glRasterPos3f (x, y, -1);
+
+//    for( int i = 0; i < len; i++)
+//        glutBitmapCharacter( font_style, str[i] );
+}
 
 void setupLight( bool on )
 {
@@ -126,24 +156,24 @@ void drawTris( float x, float y, float z, MarchingCubes::TriangleF* tris, int tr
 		MarchingCubes::TriangleF&     tri = tris[t];
 		glColor3f( 0.9f, 0.9f, 0.9f );
 
-		MarchingCubes::Vector3F  delta1 = tri.v[1] - tri.v[0];
-		MarchingCubes::Vector3F  delta2 = tri.v[2] - tri.v[0];
+		MarchingCubes::Vector3F  delta1 = tri.v[1].pos - tri.v[0].pos;
+		MarchingCubes::Vector3F  delta2 = tri.v[2].pos - tri.v[0].pos;
 
 		MarchingCubes::Vector3F  normal;
 		MarchingCubes::getCrossProduct( delta1.f, delta2.f, normal.f );
 
 		glNormal3f( normal.f[0], normal.f[1], normal.f[2] );
 
-		glVertex3f( tri.v[0].f[0]+x, tri.v[0].f[1]+y, tri.v[0].f[2]+z );
-		glVertex3f( tri.v[1].f[0]+x, tri.v[1].f[1]+y, tri.v[1].f[2]+z );
-		glVertex3f( tri.v[2].f[0]+x, tri.v[2].f[1]+y, tri.v[2].f[2]+z );
+		glVertex3f( tri.v[0].pos.f[0]+x, tri.v[0].pos.f[1]+y, tri.v[0].pos.f[2]+z );
+		glVertex3f( tri.v[1].pos.f[0]+x, tri.v[1].pos.f[1]+y, tri.v[1].pos.f[2]+z );
+		glVertex3f( tri.v[2].pos.f[0]+x, tri.v[2].pos.f[1]+y, tri.v[2].pos.f[2]+z );
 
 		// if you press 'p' key it will print current geometry to the console
 		if( print ) {
 			printf( "%.2f %.2f %.2f \t%.2f %.2f %.2f \t%.2f %.2f %.2f\n",
-					tri.v[0].f[0]+x, tri.v[0].f[1]+y, tri.v[0].f[2]+z,
-					tri.v[1].f[0]+x, tri.v[1].f[1]+y, tri.v[1].f[2]+z,
-					tri.v[2].f[0]+x, tri.v[2].f[1]+y, tri.v[2].f[2]+z );
+					tri.v[0].pos.f[0]+x, tri.v[0].pos.f[1]+y, tri.v[0].pos.f[2]+z,
+					tri.v[1].pos.f[0]+x, tri.v[1].pos.f[1]+y, tri.v[1].pos.f[2]+z,
+					tri.v[2].pos.f[0]+x, tri.v[2].pos.f[1]+y, tri.v[2].pos.f[2]+z );
 		}
 	}
 	glEnd();
@@ -156,14 +186,14 @@ void drawEdges( float x, float y, float z, MarchingCubes::TriangleF* tris, int t
 		MarchingCubes::TriangleF&     tri = tris[t];
 
 		glColor3f( 0.0f, 0.0f, 0.0f );
-		glVertex3f( tri.v[0].f[0]+x, tri.v[0].f[1]+y, tri.v[0].f[2]+z );
-		glVertex3f( tri.v[1].f[0]+x, tri.v[1].f[1]+y, tri.v[1].f[2]+z );
+		glVertex3f( tri.v[0].pos.f[0]+x, tri.v[0].pos.f[1]+y, tri.v[0].pos.f[2]+z );
+		glVertex3f( tri.v[1].pos.f[0]+x, tri.v[1].pos.f[1]+y, tri.v[1].pos.f[2]+z );
 
-		glVertex3f( tri.v[1].f[0]+x, tri.v[1].f[1]+y, tri.v[1].f[2]+z );
-		glVertex3f( tri.v[2].f[0]+x, tri.v[2].f[1]+y, tri.v[2].f[2]+z );
+		glVertex3f( tri.v[1].pos.f[0]+x, tri.v[1].pos.f[1]+y, tri.v[1].pos.f[2]+z );
+		glVertex3f( tri.v[2].pos.f[0]+x, tri.v[2].pos.f[1]+y, tri.v[2].pos.f[2]+z );
 
-		glVertex3f( tri.v[2].f[0]+x, tri.v[2].f[1]+y, tri.v[2].f[2]+z );
-		glVertex3f( tri.v[0].f[0]+x, tri.v[0].f[1]+y, tri.v[0].f[2]+z );
+		glVertex3f( tri.v[2].pos.f[0]+x, tri.v[2].pos.f[1]+y, tri.v[2].pos.f[2]+z );
+		glVertex3f( tri.v[0].pos.f[0]+x, tri.v[0].pos.f[1]+y, tri.v[0].pos.f[2]+z );
 	}
 	glEnd();
 }

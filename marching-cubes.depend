@@ -1,8 +1,9 @@
 # depslib dependency file v1.0
-1391470405 source:d:\dev\3d\marching-cubes\main.cpp
+1391474356 source:d:\dev\3d\marching-cubes\main.cpp
 	<stdio.h>
 	<windows.h>
 	<gl/gl.h>
+	<string>
 	"include/VoxelField.h"
 	"include/MarchingCubes.h"
 
@@ -11,10 +12,11 @@
 	<math.h>
 	<assert.h>
 
-1391467990 d:\dev\3d\marching-cubes\include\marchingcubes.h
+1391473869 d:\dev\3d\marching-cubes\include\marchingcubes.h
 	"VoxelField.h"
+	<math.h>
 
-1391467945 source:d:\dev\3d\marching-cubes\src\marchingcubes.cpp
+1391474424 source:d:\dev\3d\marching-cubes\src\marchingcubes.cpp
 	<set>
 	<stdio.h>
 	<string.h>

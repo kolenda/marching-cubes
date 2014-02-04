@@ -31,6 +31,7 @@
 #define MARCHINGCUBES_H
 
 #include "VoxelField.h"
+#include <math.h>
 
 class MarchingCubes
 {
@@ -44,6 +45,21 @@ public:
     // 3D vector class storing float position
     struct  Vector3F {
         float f[3];
+        Vector3F& operator+ (Vector3F& v1) {
+            Vector3F res;
+            res.f[0] = f[0] + v1.f[0];
+            res.f[1] = f[1] + v1.f[1];
+            res.f[2] = f[2] + v1.f[2];
+            return res;
+        };
+        Vector3F& operator+= (const Vector3F& v1)
+        {
+            f[0] += v1.f[0];
+            f[1] += v1.f[1];
+            f[2] += v1.f[2];
+
+            return *this;
+        }
         Vector3F operator- (Vector3F& v1) {
             Vector3F res;
             res.f[0] = f[0] - v1.f[0];
@@ -51,10 +67,29 @@ public:
             res.f[2] = f[2] - v1.f[2];
             return res;
         };
+        void normalise() {
+            float len = f[0]*f[0] + f[1]*f[1] + f[2]*f[2];
+            float lenSqrRoot = sqrtf(len);
+            float mulFactor = 1 / lenSqrRoot;
+            f[0] *= mulFactor;
+            f[1] *= mulFactor;
+            f[2] *= mulFactor;
+        }
+        float length() {
+            float len = f[0]*f[0] + f[1]*f[1] + f[2]*f[2];
+            float lenSqrRoot = sqrtf(len);
+            return lenSqrRoot;
+        }
+    };
+    struct Vertex {
+        Vector3F    pos;
+        Vector3F    norm;
     };
     // Triangle described as 3 vector positions
     struct  TriangleF {
-        Vector3F v[3];
+        Vertex  //Vector3F
+                v[3];
+//        Vector3F v[3];
     };
     // Triangle represented by 3 vector indices - will be needed for vertex buffers (some day;))
     struct  TriangleI {
@@ -68,8 +103,10 @@ public:
     struct  MarchingCubesCase {
         int index;
         int numTri;
-        TriangleI tris[10];
-        Vector3F normal;
+          TriangleI tris[25];
+        Vector3F normal[25];
+//      TriangleI tris[10];
+  //      Vector3F normal;
     };
 
 	void	setOffsets( float sizex, float sizey, float sizez );
@@ -95,8 +132,15 @@ private:
     int         _getEdgeBySymmetry( int edge, int axis );
     // check if params differ by 1 and only 1 bit (checks only 3 first bits)
     bool        _oneBitDiff( int v1, int v2 );
+    // check if params differ by 2 and only 2 bits (checks only 3 first bits)
+    bool        _twoBitsDiff( int v1, int v2 );
     // gets 4 edges parallel to the axis
     void        _getEdgesAlongAxis( int axis, int edges[4] );
+
+
+    void        _getPlaneEdges( int v1, int v2, int edges[4] );
+    int         _capSingleVertexPlane( MarchingCubesCase& cubeCase, int v1, int v2 );
+
 
 //  ++startup data++
     void        _fillVertices();
@@ -131,8 +175,10 @@ private:
     // prints all values from triangles table - for debug purposes
     void        printTable();
 
+    VoxelField& field;
+
 public:
-    MarchingCubes();
+    MarchingCubes( VoxelField& f );
 
     // inits entire geometry
     void init();
@@ -150,6 +196,9 @@ public:
 
     // copy triangles for current case
     int     fillInTriangles( MarchingCubes::TriangleF tris[8] );
+//    int     fillInAllTriangles( MarchingCubes::TriangleF* tris, int maxTris );
+//    int     fillInTrianglesIndexed( MarchingCubes::Vertex* vert, int maxVert, MarchingCubes::TriangleI* tris, int maxTris, int& vertexNum, int& triNum );
+
     int     getUsageStats( int i ) { return usageStats[i]; }
 
     // just some math helpers to avoid any deps
