@@ -486,6 +486,8 @@ int MarchingCubes::_findHalfSplit( int code )
             cubeCase.tris[ cubeCase.numTri ][1] = edge1;
             cubeCase.tris[ cubeCase.numTri ][2] = edge2;
             cubeCase.numTri++;
+
+            cubeCase.normal[cubeCase.numTri] = _getNormalFromBits( 0 );
             cubeCase.tris[ cubeCase.numTri ][0] = edge1;
             cubeCase.tris[ cubeCase.numTri ][1] = endEdge;
             cubeCase.tris[ cubeCase.numTri ][2] = edge2;
