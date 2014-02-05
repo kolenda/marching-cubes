@@ -1,8 +1,9 @@
 # depslib dependency file v1.0
-1391474356 source:d:\dev\3d\marching-cubes\main.cpp
-	<stdio.h>
+1391564776 source:d:\dev\3d\marching-cubes\main.cpp
 	<windows.h>
-	<gl/gl.h>
+	<GL/glew.h>
+	<GL/glut.h>
+	<stdio.h>
 	<string>
 	"include/VoxelField.h"
 	"include/MarchingCubes.h"
@@ -12,13 +13,52 @@
 	<math.h>
 	<assert.h>
 
-1391473869 d:\dev\3d\marching-cubes\include\marchingcubes.h
+1391558302 d:\dev\3d\marching-cubes\include\marchingcubes.h
 	"VoxelField.h"
 	<math.h>
 
-1391474424 source:d:\dev\3d\marching-cubes\src\marchingcubes.cpp
+1391559915 source:d:\dev\3d\marching-cubes\src\marchingcubes.cpp
 	<set>
 	<stdio.h>
 	<string.h>
 	"MarchingCubes.h"
+
+1344245012 d:\dev\3d\marching-cubes\include\gl\glew.h
+	<stddef.h>
+	<inttypes.h>
+	<stdint.h>
+	<inttypes.h>
+	<OpenGL/glu.h>
+	<GL/glu.h>
+
+1363643984 d:\dev\3d\marching-cubes\include\gl\glut.h
+	"freeglut_std.h"
+
+1363643984 d:\dev\3d\marching-cubes\include\gl\freeglut_std.h
+	<windows.h>
+	<GL/gl.h>
+	<GL/glu.h>
+	<stdlib.h>
+
+1363559265 source:d:\dev\3d\marching-cubes\glew\glew.c
+	<GL/glew.h>
+	<GL/wglew.h>
+	<GL/glxew.h>
+	<dlfcn.h>
+	<stdio.h>
+	<stdlib.h>
+	<stdlib.h>
+	<string.h>
+	<AvailabilityMacros.h>
+	<dlfcn.h>
+	<mach-o/dyld.h>
+
+1344245012 d:\dev\3d\marching-cubes\include\gl\wglew.h
+	<windows.h>
+
+1344245012 d:\dev\3d\marching-cubes\include\gl\glxew.h
+	<X11/Xlib.h>
+	<X11/Xutil.h>
+	<X11/Xmd.h>
+	<GL/glew.h>
 

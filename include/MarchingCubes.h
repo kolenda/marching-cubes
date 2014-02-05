@@ -177,6 +177,22 @@ private:
 
     VoxelField& field;
 
+
+//  CACHE
+    int     _cacheOffsetFromCubeEdge( int x, int y, int z, int e );
+    int*    _cacheAlloc( int fieldX, int fieldY, int fieldZ );
+    void    _cacheFree();
+    int     _cacheVertex( int x, int y, int z, int e );
+    void    _cacheClear();
+
+    int     cacheSizeX;
+    int     cacheSizeY;
+    int     cacheSizeZ;
+    int     vertexNum;
+    int*    cacheField;
+    int     cacheSize;
+
+
 public:
     MarchingCubes( VoxelField& f );
 
@@ -197,7 +213,7 @@ public:
     // copy triangles for current case
     int     fillInTriangles( MarchingCubes::TriangleF tris[8] );
 //    int     fillInAllTriangles( MarchingCubes::TriangleF* tris, int maxTris );
-//    int     fillInTrianglesIndexed( MarchingCubes::Vertex* vert, int maxVert, MarchingCubes::TriangleI* tris, int maxTris, int& vertexNum, int& triNum );
+    int     fillInTrianglesIndexed( MarchingCubes::Vertex* vert, int maxVert, MarchingCubes::TriangleI* tris, int maxTris, int& vertexNum, int& triNum );
 
     int     getUsageStats( int i ) { return usageStats[i]; }
 

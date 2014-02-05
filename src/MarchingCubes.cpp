@@ -34,6 +34,77 @@ int _getBitNum( unsigned short number )
     return bits;
 }
 
+int MarchingCubes::_cacheVertex( int x, int y, int z, int e )
+{
+    int vertexIndex = 0;
+    int index = _cacheOffsetFromCubeEdge( x, y, z, e );
+    if( cacheField[index] > 0 )
+        vertexIndex = cacheField[index];
+    else {
+//        vertexTable[vertexNum] = interp(...);
+        cacheField[index] = vertexNum;
+        vertexIndex = vertexNum;
+        vertexNum++;
+    }
+    return index;
+}
+
+int MarchingCubes::_cacheOffsetFromCubeEdge( int x, int y, int z, int e )
+{
+    if( _getEdgeBySymmetry(e,0) < e ) {
+        x++;
+        e = _getEdgeBySymmetry(e,0);
+    }
+    if( _getEdgeBySymmetry(e,1) < e ) {
+        y++;
+        e = _getEdgeBySymmetry(e,1);
+    }
+    if( _getEdgeBySymmetry(e,2) < e ) {
+        z++;
+        e = _getEdgeBySymmetry(e,2);
+    }
+
+    int res = x + y * cacheSizeX + z*cacheSizeX*cacheSizeY;
+    res = (res * 3) + e;
+    return res;
+}
+int* MarchingCubes::_cacheAlloc( int fieldX, int fieldY, int fieldZ )
+{
+    _cacheFree();
+
+    int x = _getBitNum( fieldX );
+    int y = _getBitNum( fieldY );
+    int z = _getBitNum( fieldZ );
+
+    cacheSizeX = 1 << (x);
+    cacheSizeY = 1 << (y);
+    cacheSizeZ = 1 << (z);
+
+    cacheSize = cacheSizeX*cacheSizeY*cacheSizeZ * 4;
+    cacheField = new int[ cacheSize ];
+    return cacheField;
+}
+void MarchingCubes::_cacheFree()
+{
+    if( cacheField ) {
+        delete[] cacheField;
+        cacheField = NULL;
+
+        cacheSizeX = 0;
+        cacheSizeY = 0;
+        cacheSizeZ = 0;
+        cacheSize = 0;
+    }
+}
+void MarchingCubes::_cacheClear()
+{
+    if( cacheField ) {
+        for( int i = 0; i < cacheSize; i++ )
+            cacheField[i] = -1;
+    }
+}
+
+
 
 MarchingCubes::MarchingCubes( VoxelField& f ) : field(f)
 {
@@ -48,6 +119,120 @@ void MarchingCubes::init()
 
     printTable();
 }
+
+
+int MarchingCubes::fillInTrianglesIndexed( MarchingCubes::Vertex* vert, int maxVert, MarchingCubes::TriangleI* tris, int maxTris, int& vertexNum, int& triNum )
+{
+    _cacheAlloc( field.getSizeX(), field.getSizeY(), field.getSizeZ() );
+    _cacheClear();
+    int currTriangle = 0;
+    int currVert    = 0;
+
+    for( int x = 0; x < field.getSizeX()-1; x++ )
+    for( int y = 0; y < field.getSizeY()-1; y++ )
+    for( int z = 0; z < field.getSizeZ()-1; z++ )
+    {
+        Cube2 cube = field.getCube( x, y, z );
+        if( cube.notEmpty() ) {
+            if( currTriangle < maxTris - 25 ) {
+                TriangleF     tmpTris[25];
+                setValues( cube );
+
+                MarchingCubesCase &cubeCase = getCaseFromValues();
+                usageStats[cubeCase.index]++;
+
+                int triNum = 0;
+                for( ; triNum < cubeCase.numTri; triNum++ ) {
+                    int e1 = cubeCase.tris[triNum][0];
+                    int e2 = cubeCase.tris[triNum][1];
+                    int e3 = cubeCase.tris[triNum][2];
+
+                    int cache1 = _cacheOffsetFromCubeEdge(x,y,z,e1);
+                    int cache2 = _cacheOffsetFromCubeEdge(x,y,z,e2);
+                    int cache3 = _cacheOffsetFromCubeEdge(x,y,z,e3);
+
+                    int index1 = 0;
+                    int index2 = 0;
+                    int index3 = 0;
+
+                    if( cacheField[cache1] > 0 )
+                        index1 = cacheField[cache1];
+                    else {
+                        cacheField[cache1] = currVert;
+                        Vector3F vec1 = getVertexFromEdge( e1 );
+//                        vert[currVert].norm = vec1;
+                        vec1.f[0] += x;
+                        vec1.f[1] += y;
+                        vec1.f[2] += z;
+                        vert[currVert].pos = vec1;
+                        index1 = currVert++;
+                    }
+
+                    if( cacheField[cache2] > 0 )
+                        index2 = cacheField[cache2];
+                    else {
+                        cacheField[cache2] = currVert;
+                        Vector3F vec2 = getVertexFromEdge( e2 );
+//                        vert[currVert].norm = vec2;
+                        vec2.f[0] += x;
+                        vec2.f[1] += y;
+                        vec2.f[2] += z;
+                        vert[currVert].pos = vec2;
+                        index2 = currVert++;
+                    }
+                    if( cacheField[cache3] > 0 )
+                        index3 = cacheField[cache3];
+                    else {
+                        cacheField[cache3] = currVert;
+                        Vector3F vec3 = getVertexFromEdge( e3 );
+//                        vert[currVert].norm = vec3;
+                        vec3.f[0] += x;
+                        vec3.f[1] += y;
+                        vec3.f[2] += z;
+                        vert[currVert].pos = vec3;
+                        index3 = currVert++;
+                    }
+
+                    Vector3F vec1 = vert[index1].pos;
+                    Vector3F vec2 = vert[index2].pos;
+                    Vector3F vec3 = vert[index3].pos;
+
+                    Vector3F  delta1 = vec2 - vec1;
+                    Vector3F  delta2 = vec3 - vec1;
+
+                    Vector3F  normal;
+                    getCrossProduct( delta1.f, delta2.f, normal.f );
+//                    normal.normalise();
+                    vert[index1].norm += normal;
+                    vert[index2].norm += normal;
+                    vert[index3].norm += normal;
+
+
+                    tris[currTriangle].i[0] = index1;
+                    tris[currTriangle].i[1] = index2;
+                    tris[currTriangle].i[2] = index3;
+                    currTriangle++;
+                }
+            }
+            else;
+        }
+    }
+
+    for( int v = 0; v < currVert; v++ ) {
+            if( vert[v].norm.length() < 0.5 ) {
+                int x = 5;
+            }
+        vert[v].norm.normalise();
+    }
+
+
+    vertexNum = currVert;
+    triNum = currTriangle;
+
+    return currTriangle;
+}
+
+
 
 int MarchingCubes::generateTriangles()
 {

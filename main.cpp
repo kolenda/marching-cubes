@@ -1,7 +1,16 @@
-#include <stdio.h>
 #include <windows.h>
-#include <gl/gl.h>
+
+#define GLEW_STATIC
+// 1
+#include <GL/glew.h>
+#include <GL/glut.h>
+//#include <GL/glext.h>
+//#include <GL/Wglext.h>
+
+#include <stdio.h>
 #include <string>
+
+//#include <gl/gl.h>
 
 #include "include/VoxelField.h"
 #include "include/MarchingCubes.h"
@@ -28,6 +37,8 @@ MarchingCubes   march(cf);
 bool lighting = true;
 bool anim = true;
 bool drawEdgesBool = false;
+bool geomNeedsUpdate = false;
+bool wireframe = false;
 bool print = false;
 float phase = 0.0f;
 
@@ -129,6 +140,198 @@ int setView()
     return 1;
 }
 
+void generateTrianglesVBO() {
+    glGenBuffers( 1, &trianglesVertexBuffer );
+}
+void deleteTrianglesVBO() {
+    glDeleteBuffers(1, &trianglesVertexBuffer );
+}
+void generateTrianglesIndexedVBO() {
+    glGenBuffers( 1, &trianglesIndexedVertexBuffer );
+    glGenBuffers( 1, &trianglesIndexedIndexBuffer );
+}
+void deleteTrianglesIndexedVBO() {
+    glDeleteBuffers(1, &trianglesIndexedVertexBuffer );
+    glDeleteBuffers(1, &trianglesIndexedIndexBuffer );
+}
+
+
+int currentTriangleNum = 0;
+int currentTriangleIndexedNum  = 0;
+
+void fillTrianglesVBO( MarchingCubes::TriangleF* tris, int triNum ) {
+    glBindBuffer( GL_ARRAY_BUFFER, trianglesVertexBuffer );
+    glBufferData( GL_ARRAY_BUFFER, triNum*sizeof(MarchingCubes::TriangleF), tris, GL_DYNAMIC_DRAW );  //
+                                                                                  //  GL_STATIC_DRAW );
+    currentTriangleNum = triNum;
+}
+
+void fillTrianglesIndexedVBO( MarchingCubes::Vertex* vert, int vertexNumber, MarchingCubes::TriangleI* tris, int triangleNumber ) {
+
+    glBindBuffer( GL_ARRAY_BUFFER, trianglesIndexedVertexBuffer );
+    glBufferData( GL_ARRAY_BUFFER, vertexNumber*sizeof(MarchingCubes::Vertex), vert, GL_DYNAMIC_DRAW );  //
+                                                                                  //  GL_STATIC_DRAW );
+    glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, trianglesIndexedIndexBuffer );
+    glBufferData( GL_ELEMENT_ARRAY_BUFFER, triangleNumber*sizeof(MarchingCubes::TriangleI), tris, GL_DYNAMIC_DRAW );
+
+    currentTriangleIndexedNum = triangleNumber;
+}
+
+
+void drawTrianglesVBO() {
+    glBindBuffer( GL_ARRAY_BUFFER, trianglesVertexBuffer );
+
+    glEnableClientState( GL_VERTEX_ARRAY );
+    glEnableClientState( GL_NORMAL_ARRAY );
+
+    glVertexPointer( 3, GL_FLOAT, sizeof(MarchingCubes::Vertex), NULL ); //(GLvoid*)(verts[0].pos));
+    glNormalPointer( GL_FLOAT, sizeof(MarchingCubes::Vertex), (GLvoid*)(sizeof(GLfloat)*3) );
+
+    if( wireframe )     glDrawArrays( GL_LINES, 0, currentTriangleNum*3 );
+    else                glDrawArrays( GL_TRIANGLES, 0, currentTriangleNum*3 );
+
+    glDisableClientState( GL_VERTEX_ARRAY );
+    glDisableClientState( GL_NORMAL_ARRAY );
+}
+
+void drawTrianglesIndexedVBO()
+{
+    glBindBuffer( GL_ARRAY_BUFFER, trianglesIndexedVertexBuffer );
+    glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, trianglesIndexedIndexBuffer );
+
+    glEnableClientState( GL_VERTEX_ARRAY );
+    glEnableClientState( GL_NORMAL_ARRAY );
+
+    glVertexPointer( 3, GL_FLOAT, sizeof(MarchingCubes::Vertex), NULL ); //(GLvoid*)(verts[0].pos));
+    glNormalPointer( GL_FLOAT, sizeof(MarchingCubes::Vertex), (GLvoid*)(sizeof(float    //GLfloat
+                                                                                    )*3) );
+
+//    glVertexPointer( 3, GL_FLOAT, sizeof(AxisVert), NULL ); //(GLvoid*)(verts[0].pos));
+  //  glColorPointer( 3, GL_UNSIGNED_BYTE, sizeof(AxisVert), (GLvoid*)(sizeof(GLfloat)*3));
+
+    if( wireframe ){
+//        for( int i = 0; i < currentTriangleIndexedNum; i++ )
+  //      glDrawElements( GL_LINE_LOOP, 3, GL_UNSIGNED_INT, (void*)0);
+                        glDrawElements( GL_LINES, currentTriangleIndexedNum*3, GL_UNSIGNED_INT, (void*)0);
+    }
+    else                glDrawElements( GL_TRIANGLES, currentTriangleIndexedNum*3, GL_UNSIGNED_INT, (void*)0);
+
+    glDisableClientState( GL_VERTEX_ARRAY );
+    glDisableClientState( GL_NORMAL_ARRAY );
+}
+
+
+void updateGeometry()
+{
+    cf.setAllValues( -0.5f );
+    float x = 0.4 * cf.getSizeX() * sin(phase*0.1) + 0.5 * cf.getSizeX();
+    float y = 0.4 * cf.getSizeY() * cos(phase*0.2) + 0.5 * cf.getSizeY();
+    float z = 0.4 * cf.getSizeZ() * sin(1+phase*0.15) + 0.5 * cf.getSizeZ();
+    float rad = cf.getSizeX() / 4;
+    cf.addSphere( x, y, z, rad );
+    cf.addSphere( y, z, x, rad );
+    cf.addSphere( z, x, y, rad );
+
+    cf.addSphere( z, y, x, rad );
+    cf.addSphere( y, x, z, rad );
+    cf.addSphere( x, z, y, rad );
+
+#define MAX_TRIS    10000
+    MarchingCubes::Vertex       verts[MAX_TRIS];
+    MarchingCubes::TriangleI    trisI[MAX_TRIS];
+    int vertexNum = 0;
+    int triNum = 0;
+
+
+    march.fillInTrianglesIndexed( verts, MAX_TRIS, trisI, MAX_TRIS, vertexNum, triNum );
+
+    fillTrianglesIndexedVBO( verts, vertexNum, trisI, triNum );
+//    MarchingCubes::TriangleF     allTris[MAX_TRIS];
+//    int allTriNum = march.fillInAllTriangles( allTris, MAX_TRIS );
+//    fillTrianglesVBO( allTris, allTriNum );
+}
+
+void generateAxesVBO() {
+    const GLfloat axExt = 40.0f;
+
+    AxisVert    verts[6] = {
+    { 0.0f, 0.0f, 0.0f, 255, 255, 255 },
+    { axExt, 0.0f, 0.0f, 255, 0, 0 },
+    { 0.0f, 0.0f, 0.0f, 255, 255, 255 },
+    { 0.0f, axExt, 0.0f, 0, 255, 0 },
+    { 0.0f, 0.0f, 0.0f, 255, 255, 255 },
+    { 0.0f, 0.0f, axExt, 0, 0, 255 },
+    };
+//    int     indices[] = { 0, 1, 0, 2, 0, 3 };
+
+    glGenBuffers( 1, &axesVertexBuffer );
+    glBindBuffer( GL_ARRAY_BUFFER, axesVertexBuffer );
+    glBufferData( GL_ARRAY_BUFFER, sizeof(verts), verts, GL_DYNAMIC_DRAW);  //STATIC_DRAW);
+
+/*    AxisVert    verts[6] = {
+    { 0.0f, 0.0f, 0.0f, 255, 255, 255 },
+    { axExt, 0.0f, 0.0f, 255, 0, 0 },
+    { 0.0f, axExt, 0.0f, 0, 255, 0 },
+    { 0.0f, 0.0f, axExt, 0, 0, 255 },
+    };
+    int     indices[] = { 0, 1, 0, 2, 0, 3 };
+
+    glGenBuffers( 1, &axesVertexBuffer );
+    glBindBuffer( GL_ARRAY_BUFFER, axesVertexBuffer);
+    glBufferData( GL_ARRAY_BUFFER, sizeof(verts), verts, GL_DYNAMIC_DRAW);  //STATIC_DRAW);
+
+    glGenBuffers( 1, &axesIndexBuffer );
+    glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, axesIndexBuffer);
+    glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_DYNAMIC_DRAW);  //STATIC_DRAW);
+*/
+}
+
+void deleteAxesVBO() {
+    glDeleteBuffers(1, &axesVertexBuffer);
+    glDeleteBuffers(1, &axesIndexBuffer);
+}
+
+
+void drawAxesVBO()
+{
+//    GLfloat pos[3];
+//    GLubyte color[3];
+
+    glBindBuffer( GL_ARRAY_BUFFER, axesVertexBuffer );
+
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_COLOR_ARRAY);
+
+    glVertexPointer( 3, GL_FLOAT, sizeof(AxisVert), NULL ); //(GLvoid*)(verts[0].pos));
+    glColorPointer( 3, GL_UNSIGNED_BYTE, sizeof(AxisVert), (GLvoid*)(sizeof(GLfloat)*3));
+
+    glDrawArrays( GL_LINES, 0, 6 );
+
+    glDisableClientState(GL_VERTEX_ARRAY);
+    glDisableClientState(GL_COLOR_ARRAY);
+/*
+    glBindBuffer( GL_ARRAY_BUFFER, axesVertexBuffer );
+    glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, axesIndexBuffer );
+
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_COLOR_ARRAY);
+
+    glVertexPointer( 3, GL_FLOAT, sizeof(AxisVert), NULL ); //(GLvoid*)(verts[0].pos));
+    glColorPointer( 3, GL_UNSIGNED_BYTE, sizeof(AxisVert), (GLvoid*)(sizeof(GLfloat)*3));
+
+    glDrawElements( GL_LINES, 6, GL_UNSIGNED_INT, (void*)0);
+
+    glDisableClientState(GL_VERTEX_ARRAY);
+    glDisableClientState(GL_COLOR_ARRAY);
+*/
+}
+
+
+
+
+
+
+
 void drawAxes()
 {
     glBegin( GL_LINES );
@@ -216,6 +419,49 @@ int updateVoxelField( float phase )
 	return 1;
 }
 
+
+void drawVBO()
+{
+    setupLight( lighting );
+    setView();
+
+//    drawTrianglesVBO();
+    drawTrianglesIndexedVBO();
+
+    print = false;
+
+    setupLight( false );
+    drawAxesVBO();
+
+    glLoadIdentity ();
+    glColor3f( 1, 1, 1 );
+}
+
+void printTime()
+{
+    static double lastTime = 0;	//glutGet(GLUT_ELAPSED_TIME);
+
+    static int nbFrames = 0;
+    static float fps = 0;
+
+     // Measure speed
+     double currentTime = 0;	//glutGet(GLUT_ELAPSED_TIME);
+     nbFrames++;
+     if ( currentTime - lastTime >= 1000.0 ){
+         fps = double(nbFrames)*1000.0/
+         (currentTime - lastTime);
+         nbFrames = 0;
+         lastTime = currentTime;
+     }
+
+     char buff[64];
+     sprintf( buff, "FPS: %.2f", fps );
+     printText( -1, -1, buff );
+     sprintf( buff, "phase: %.2f", phase );
+     printText( -1, -0.9, buff );
+     sprintf( buff, "x:%d, y:%d, z:%d", debugAxes[0], debugAxes[1], debugAxes[2] );
+     printText( -1, -0.8, buff );
+}
 
 void iterate()
 {
@@ -330,6 +576,18 @@ int WINAPI WinMain(HINSTANCE hInstance,
     /* enable OpenGL for the window */
     EnableOpenGL(hwnd, &hDC, &hRC);
 
+
+    char *myargv [1];
+    int myargc=1;
+    myargv [0]=strdup ("Myappname");
+    glutInit(&myargc, myargv);
+    glewInit();
+
+    generateAxesVBO();
+    generateTrianglesVBO();
+    generateTrianglesIndexedVBO();
+
+
 		march.init();
 		cf.setSize(	//				5, 5, 5 );
 				GRID_SIZE_X, GRID_SIZE_Y, GRID_SIZE_Z );
@@ -357,8 +615,12 @@ int WINAPI WinMain(HINSTANCE hInstance,
         }
         else
         {
-				if( anim )
-					phase += 0.05;
+			if( anim )
+				phase += 0.05;
+            if( anim || geomNeedsUpdate ) {
+                geomNeedsUpdate = false;
+                updateGeometry() ;
+            }
 
 				updateVoxelField( phase );
 
@@ -370,14 +632,18 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
 
 				drawFrame();
+//            draw();
 
-//            glPopMatrix();
             print = false;
             SwapBuffers(hDC);
 
 //            Sleep (1);
         }
     }
+
+    deleteAxesVBO();
+    deleteTrianglesVBO();
+    deleteTrianglesIndexedVBO();
 
     /* shutdown OpenGL */
     DisableOpenGL(hwnd, hDC, hRC);
@@ -441,6 +707,28 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 case 'A':
                     anim = !anim;
                 break;
+
+                case 'F':
+                    wireframe = !wireframe;
+                break;
+
+                case 'X':
+                    currentAxis = 0;
+                break;
+                case 'Y':
+                    currentAxis = 1;
+                break;
+                case 'Z':
+                    currentAxis = 2;
+                break;
+                case VK_OEM_4:
+                    if( debugAxes[currentAxis] > 0 )
+                        debugAxes[currentAxis]--;
+                break;
+                case VK_OEM_6:
+                    debugAxes[currentAxis]++;
+                break;
+
                 case 'E':
                     drawEdgesBool = !drawEdgesBool;
                 break;
