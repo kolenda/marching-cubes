@@ -235,18 +235,12 @@ public:
     //      it's meant to create spherical objects in voxel space,
     //      but mathematically it's just a linear function of distance from center
     void addSphere( float fx, float fy, float fz, float frad ) {
-        int startX = //0; //
-						max( 0.0f, fx-frad );
-        int startY = //0; //
-						max( 0.0f, fy-frad );
-        int startZ = //0; //
-						max( 0.0f, fz-frad );
-        int stopX  = //sizeX; //
-						min( (float)sizeX, fx+frad );
-        int stopY  = //sizeY; //
-						min( (float)sizeY, fy+frad );
-        int stopZ  = //sizeZ; //
-						min( (float)sizeZ, fz+frad );
+        int startX = 0; //						max( 0.0f, fx-frad );
+        int startY = 0; //						max( 0.0f, fy-frad );
+        int startZ = 0; //						max( 0.0f, fz-frad );
+        int stopX  = sizeX; //						min( (float)sizeX, fx+frad );
+        int stopY  = sizeY; //						min( (float)sizeY, fy+frad );
+        int stopZ  = sizeZ; //						min( (float)sizeZ, fz+frad );
 
         //we iterate over all points in voxel space
         for( int xx = startX; xx < stopX; xx++ ) {
