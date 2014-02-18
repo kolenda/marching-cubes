@@ -1,16 +1,18 @@
-#include <windows.h>
 
 #define GLEW_STATIC
 // 1
+//#define FREEGLUT_STATIC
 #include <GL/glew.h>
 #include <GL/glut.h>
-//#include <GL/glext.h>
-//#include <GL/Wglext.h>
+
+#include <iostream>
+//#include <stdio.h>
 
 #include <stdio.h>
 #include <string>
 
 //#include <gl/gl.h>
+#include <windows.h>
 
 #include "include/VoxelField.h"
 #include "include/MarchingCubes.h"
@@ -20,7 +22,7 @@ LRESULT CALLBACK WindowProc(HWND, UINT, WPARAM, LPARAM);
 void EnableOpenGL(HWND hwnd, HDC*, HGLRC*);
 void DisableOpenGL(HWND, HDC, HGLRC);
 
-//GLvoid *font_style = GLUT_BITMAP_TIMES_ROMAN_24;
+GLvoid *font_style = GLUT_BITMAP_TIMES_ROMAN_24;
 
 GLuint axesVertexBuffer = 0;
 GLuint axesIndexBuffer = 0;
@@ -49,9 +51,9 @@ float zoomOut   = 40.0f;
 int currentAxis = 0;
 int debugAxes[3] = {0,0,0};
 
-int	GRID_SIZE_X = 40;
-int GRID_SIZE_Y = 40;
-int GRID_SIZE_Z = 40;
+int	GRID_SIZE_X = 10;	//					40;
+int GRID_SIZE_Y = 10;	//					40;
+int GRID_SIZE_Z = 10;	//					40;
 
 GLfloat ambientColor[] = {0.2f, 0.2f, 0.2f, 1.0f};
 GLfloat lightColorRed[] = {1.0f, 0.0f, 0.0f, 1.0f};
@@ -78,8 +80,8 @@ void printText( float x, float y, std::string str )
     int len = str.length();
 	glRasterPos3f (x, y, -1);
 
-//    for( int i = 0; i < len; i++)
-//        glutBitmapCharacter( font_style, str[i] );
+    for( int i = 0; i < len; i++)
+        glutBitmapCharacter( font_style, str[i] );
 }
 
 void setupLight( bool on )
@@ -89,9 +91,10 @@ void setupLight( bool on )
         glEnable( GL_LIGHT0 );
         glEnable( GL_LIGHT1 );
         glEnable( GL_LIGHT2 );
-        glEnable( GL_LIGHT3 );
+        glDisable	// Enable
+					( GL_LIGHT3 );
         glEnable( GL_NORMALIZE );
-        glShadeModel( GL_FLAT );
+        glShadeModel( GL_SMOOTH );	// FLAT );
 
         glLightModelfv( GL_LIGHT_MODEL_AMBIENT, ambientColor );
 
@@ -132,15 +135,17 @@ int setView()
     glRotatef( upAngle, 1.0f, 0.0f, 0.0f );
     glRotatef( sideAngle, 0.0f, 1.0f, 0.0f );
     glTranslatef( -cf.getSizeX()/2, -cf.getSizeY()/2, -cf.getSizeZ()/2 );
-    //glEnable	//
-    glDisable
+    //
+    glEnable	//
+//    glDisable
 			( GL_CULL_FACE );
     glEnable( GL_DEPTH_TEST );
 
     return 1;
 }
 
-void generateTrianglesVBO() {
+/*void generateTrianglesVBO() {
+//    glGenBuffersARB( 1, &trianglesVertexBuffer );
     glGenBuffers( 1, &trianglesVertexBuffer );
 }
 void deleteTrianglesVBO() {
@@ -218,38 +223,89 @@ void drawTrianglesIndexedVBO()
 
     glDisableClientState( GL_VERTEX_ARRAY );
     glDisableClientState( GL_NORMAL_ARRAY );
-}
+}*/
 
+
+#define MAX_TRIS    10000
+MarchingCubes::Vertex       verts[MAX_TRIS];
+MarchingCubes::TriangleI    trisI[MAX_TRIS];
+int vertexNum = 0;
+int triNum = 0;
 
 void updateGeometry()
 {
-    cf.setAllValues( -0.5f );
-    float x = 0.4 * cf.getSizeX() * sin(phase*0.1) + 0.5 * cf.getSizeX();
-    float y = 0.4 * cf.getSizeY() * cos(phase*0.2) + 0.5 * cf.getSizeY();
-    float z = 0.4 * cf.getSizeZ() * sin(1+phase*0.15) + 0.5 * cf.getSizeZ();
-    float rad = cf.getSizeX() / 4;
-    cf.addSphere( x, y, z, rad );
-    cf.addSphere( y, z, x, rad );
-    cf.addSphere( z, x, y, rad );
-
-    cf.addSphere( z, y, x, rad );
-    cf.addSphere( y, x, z, rad );
-    cf.addSphere( x, z, y, rad );
-
-#define MAX_TRIS    10000
-    MarchingCubes::Vertex       verts[MAX_TRIS];
-    MarchingCubes::TriangleI    trisI[MAX_TRIS];
-    int vertexNum = 0;
-    int triNum = 0;
-
+	for( int i = 0; i < MAX_TRIS; i++ ) {
+		verts[i].norm.setValue( 0.0f, 0.0f, 0.0f );
+		verts[i].used = 0;
+	}
 
     march.fillInTrianglesIndexed( verts, MAX_TRIS, trisI, MAX_TRIS, vertexNum, triNum );
-
-    fillTrianglesIndexedVBO( verts, vertexNum, trisI, triNum );
-//    MarchingCubes::TriangleF     allTris[MAX_TRIS];
-//    int allTriNum = march.fillInAllTriangles( allTris, MAX_TRIS );
-//    fillTrianglesVBO( allTris, allTriNum );
+		//fillTrianglesIndexedVBO( verts, vertexNum, trisI, triNum );
 }
+
+void drawTrianglesIndexed( MarchingCubes::Vertex* verts, MarchingCubes::TriangleI* trisI, int triNum )
+{
+	glBegin( GL_TRIANGLES );
+	for( int i = 0; i < triNum; i++ ) {	//	triangle
+
+		MarchingCubes::TriangleI& tri = trisI[i];
+
+		for( int j = 0; j < 3; j++ ) {	//	corner
+			int vertIndex = tri[j];
+			MarchingCubes::Vector3F& pos = verts[vertIndex].pos;
+			MarchingCubes::Vector3F& norm = verts[vertIndex].norm;
+
+			glNormal3f( norm.f[0], norm.f[1], norm.f[2] );
+			glVertex3f( pos.f[0], pos.f[1], pos.f[2] );
+		}
+	}
+	glEnd();
+
+	if( wireframe ) {
+        float x = debugAxes[0];
+        float y = debugAxes[1];
+        float z = debugAxes[2];
+
+        setupLight( false );
+        glBegin(GL_LINES);
+            glColor3f( 1.0f, 1.0f, 1.0f );
+            glVertex3f( x, y, z );
+            glColor3f( 1.0f, 0.0f, 0.0f );
+            glVertex3f( x+2, y, z );
+
+            glColor3f( 1.0f, 1.0f, 1.0f );
+            glVertex3f( x, y, z );
+            glColor3f( 0.0f, 1.0f, 0.0f );
+            glVertex3f( x, y+2, z );
+
+            glColor3f( 1.0f, 1.0f, 1.0f );
+            glVertex3f( x, y, z );
+            glColor3f( 0.0f, 0.0f, 1.0f );
+            glVertex3f( x, y, z+2 );
+        glEnd();
+
+        setupLight( lighting );
+
+
+		glBegin( GL_LINES );
+		for( int i = 0; i < triNum; i++ ) {	//	triangle
+
+			MarchingCubes::TriangleI& tri = trisI[i];
+
+			for( int j = 0; j < 3; j++ ) {	//	corner
+				int vertIndex = tri[j];
+				MarchingCubes::Vector3F& pos = verts[vertIndex].pos;
+				glVertex3f( pos.f[0], pos.f[1], pos.f[2] );
+
+				int vertIndex2 = tri[(j+1)%3];
+				MarchingCubes::Vector3F& pos2 = verts[vertIndex2].pos;
+				glVertex3f( pos2.f[0], pos2.f[1], pos2.f[2] );
+			}
+		}
+		glEnd();
+	}
+}
+
 
 void generateAxesVBO() {
     const GLfloat axExt = 40.0f;
@@ -264,7 +320,7 @@ void generateAxesVBO() {
     };
 //    int     indices[] = { 0, 1, 0, 2, 0, 3 };
 
-    glGenBuffers( 1, &axesVertexBuffer );
+    glGenBuffersARB( 1, &axesVertexBuffer );
     glBindBuffer( GL_ARRAY_BUFFER, axesVertexBuffer );
     glBufferData( GL_ARRAY_BUFFER, sizeof(verts), verts, GL_DYNAMIC_DRAW);  //STATIC_DRAW);
 
@@ -404,10 +460,10 @@ void drawEdges( float x, float y, float z, MarchingCubes::TriangleF* tris, int t
 int updateVoxelField( float phase )
 {
 	cf.setAllValues( -0.5f );
-	float x = 0.4 * cf.getSizeX() * sin(phase*0.1) + 0.5 * cf.getSizeX();
-	float y = 0.4 * cf.getSizeY() * cos(phase*0.2) + 0.5 * cf.getSizeY();
-	float z = 0.4 * cf.getSizeZ() * sin(1+phase*0.15) + 0.5 * cf.getSizeZ();
-	float rad = cf.getSizeX() / 4;
+	float x = 0.3 * cf.getSizeX() * sin(phase*0.1) + 0.5 * cf.getSizeX();
+	float y = 0.3 * cf.getSizeY() * cos(phase*0.2) + 0.5 * cf.getSizeY();
+	float z = 0.3 * cf.getSizeZ() * sin(1+phase*0.15) + 0.5 * cf.getSizeZ();
+	float rad = cf.getSizeX() / 3;
 	cf.addSphere( x, y, z, rad );
 	cf.addSphere( y, z, x, rad );
 	cf.addSphere( z, x, y, rad );
@@ -420,7 +476,7 @@ int updateVoxelField( float phase )
 }
 
 
-void drawVBO()
+/*void drawVBO()
 {
     setupLight( lighting );
     setView();
@@ -435,17 +491,19 @@ void drawVBO()
 
     glLoadIdentity ();
     glColor3f( 1, 1, 1 );
-}
+}*/
 
 void printTime()
 {
-    static double lastTime = 0;	//glutGet(GLUT_ELAPSED_TIME);
+    static double lastTime = //0;	//
+							glutGet(GLUT_ELAPSED_TIME);
 
     static int nbFrames = 0;
     static float fps = 0;
 
      // Measure speed
-     double currentTime = 0;	//glutGet(GLUT_ELAPSED_TIME);
+     double currentTime = //0;	//
+							glutGet(GLUT_ELAPSED_TIME);
      nbFrames++;
      if ( currentTime - lastTime >= 1000.0 ){
          fps = double(nbFrames)*1000.0/
@@ -483,6 +541,7 @@ void iterate()
 			{
 				drawTris( x, y, z, tris, triNum );
 
+
 /*				if( drawEdgesBool ) {
 					drawEdges( x, y, z, tris, triNum );
 				}*/
@@ -496,7 +555,9 @@ void drawFrame()
 	setupLight( lighting );
 	setView();
 
-	iterate();
+	drawTrianglesIndexed( verts, trisI, triNum );
+
+//	iterate();
 }
 
 
@@ -570,8 +631,10 @@ int WINAPI WinMain(HINSTANCE hInstance,
                           NULL,
                           hInstance,
                           NULL);
-
+//*/
     ShowWindow(hwnd, nCmdShow);
+
+
 
     /* enable OpenGL for the window */
     EnableOpenGL(hwnd, &hDC, &hRC);
@@ -580,20 +643,53 @@ int WINAPI WinMain(HINSTANCE hInstance,
     char *myargv [1];
     int myargc=1;
     myargv [0]=strdup ("Myappname");
-    glutInit(&myargc, myargv);
-    glewInit();
 
-    generateAxesVBO();
-    generateTrianglesVBO();
-    generateTrianglesIndexedVBO();
+    glutInit( &myargc, myargv );
+
+//glutInitDisplayMode( GLUT_RGBA | GLUT_DEPTH );	//| GLUT_DOUBLE);
+//glutInitWindowSize(800,600);
+//glutCreateWindow("GLUT");
+
+	cout<<"Renderer = "<<glGetString(GL_RENDERER)<<endl<<endl;
+	cout<<"Version = "<<glGetString(GL_VERSION)<<endl<<endl;
+	cout<<"Extensions =\n"<<glGetString(GL_EXTENSIONS)<<endl<<endl;
+
+	GLenum err = glewInit();
+	if (err!=GLEW_OK)
+	{
+		/* Problem: glewInit failed, something is seriously wrong. */
+		cout << "glewInit failed, aborting." << endl;
+		return 0;
+	}
+
+//glewInit();
+printf("OpenGL version supported by this platform (%s): \n", glGetString(GL_VERSION));
+
+
+//	glGenBuffers = (PFNGLGENBUFFERSPROC)wglGetProcAddress("glGenBuffers");
+
+
+//    glewInit();
+//	GLenum err3 = glutCreateWindow("GLEW Test");
+//if (GLEW_OK != err3)
+//{
+//  fprintf(stderr, "Error: %s\n", glewGetErrorString(err3));
+//}
+/*GLenum err = glewInit();
+if (GLEW_OK != err)
+{
+  fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
+}*/
+
+
+//    generateAxesVBO();
+//    generateTrianglesVBO();
+//    generateTrianglesIndexedVBO();
 
 
 		march.init();
-		cf.setSize(	//				5, 5, 5 );
+		cf.setSize(
 				GRID_SIZE_X, GRID_SIZE_Y, GRID_SIZE_Z );
-//				40, 40, 40 );
-//				10, 10, 10 );
-
 
 
     /* program main loop */
@@ -615,41 +711,56 @@ int WINAPI WinMain(HINSTANCE hInstance,
         }
         else
         {
-			if( anim )
-				phase += 0.05;
+			if( anim ) {
+//				phase += 0.05;
+			}
+							phase = 59.35;
+			updateVoxelField( phase );
+
+/*	cf.setVal( 0,0,0, -5 );
+	cf.setVal( 0,0,1, 10 );
+	cf.setVal( 0,1,0, 10 );
+	cf.setVal( 1,0,0, 10 );
+
+	cf.setVal( 1,1,1, 10 );
+	cf.setVal( 1,1,0, -5 );
+	cf.setVal( 1,0,1, -5 );
+	cf.setVal( 0,1,1, -5 );*/
+
+
             if( anim || geomNeedsUpdate ) {
                 geomNeedsUpdate = false;
                 updateGeometry() ;
             }
 
-				updateVoxelField( phase );
-
             /* OpenGL animation code goes here */
-
-
             glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 
 				drawFrame();
 //            draw();
 
+
+            setupLight( false );
+            drawAxes();
+
+			glLoadIdentity ();
+			glColor3f( 1, 1, 1 );
+			printTime();
+
             print = false;
             SwapBuffers(hDC);
-
-//            Sleep (1);
         }
     }
-
-    deleteAxesVBO();
-    deleteTrianglesVBO();
-    deleteTrianglesIndexedVBO();
+//    deleteAxesVBO();
+//    deleteTrianglesVBO();
+//    deleteTrianglesIndexedVBO();
 
     /* shutdown OpenGL */
-    DisableOpenGL(hwnd, hDC, hRC);
+    DisableOpenGL( hwnd, hDC, hRC );
 
     /* destroy the window explicitly */
-    DestroyWindow(hwnd);
+    DestroyWindow( hwnd );
     printUsageStats();
 
     return msg.wParam;
@@ -695,12 +806,14 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 case 'P':
                     print = true;
                 break;
+
                 case 'W':
                     phase += 0.5f;
                 break;
                 case 'Q':
                     phase -= 0.5f;
                 break;
+
                 case 'L':
                     lighting = !lighting;
                 break;

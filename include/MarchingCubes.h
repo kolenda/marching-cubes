@@ -67,6 +67,11 @@ public:
             res.f[2] = f[2] - v1.f[2];
             return res;
         };
+        void setValue( float x, float y, float z ) {
+			f[0] = x;
+			f[1] = y;
+			f[2] = z;
+		}
         void normalise() {
             float len = f[0]*f[0] + f[1]*f[1] + f[2]*f[2];
             float lenSqrRoot = sqrtf(len);
@@ -84,12 +89,11 @@ public:
     struct Vertex {
         Vector3F    pos;
         Vector3F    norm;
+        int		used;
     };
     // Triangle described as 3 vector positions
     struct  TriangleF {
-        Vertex  //Vector3F
-                v[3];
-//        Vector3F v[3];
+        Vertex  v[3];
     };
     // Triangle represented by 3 vector indices - will be needed for vertex buffers (some day;))
     struct  TriangleI {
@@ -101,12 +105,13 @@ public:
     // Description of one combination of corners
     //  stores its own index, number of triangles with triangle table, and normal used during data generation
     struct  MarchingCubesCase {
-        int index;
-        int numTri;
-          TriangleI tris[25];
-        Vector3F normal[25];
+		int				index;
+		int				numTri;
+		TriangleI		tris[25];
+        Vector3F		normal[25];
 //      TriangleI tris[10];
   //      Vector3F normal;
+		unsigned char	capPlanes;
     };
 
 	void	setOffsets( float sizex, float sizey, float sizez );
@@ -123,6 +128,7 @@ private:
     Vector3F            vertexOffset[8];
     // definition of edges, we have 12 of them, each is stored as 2 vertex indices
     int                 edgeToVertex[12][2];
+int planeToEdge[6][4];
 
     // returns index of axis parallel to the edge
     int         _getEdgeAxis( int edge );
@@ -151,15 +157,24 @@ private:
 //  ++triangle table generation++
     // main generate method
     int         generateTriangles();
+
     int         _findSingleVertexTriangles( int code );
     int         _findEdgeTriangles( int code );
     int         _findHalfSplit( int code );
     int         _findTripleVertex( int code );
     int         _findFourVertex( int code );
     int         _findSnake( int code );
+	int			_selectCapPlanes( int code );
     // fixes triangles direction between CW and CCW
-    int         _fixTriangles( int code );
+    int         _fixTrianglesNormals( int code );
 //  --triangle table generation--
+
+
+//TODO remove
+int _removeExcessiveTriangles( int i );
+bool _vertexIsAtAxisSide( int v, int axis, int sign )
+
+
 
     int         _bitsToCode( float verts[8] );
 
@@ -178,20 +193,35 @@ private:
     VoxelField& field;
 
 
+	//	tools
+	inline bool _differentSign( int a, int b );
+	inline bool _sameSign( int a, int b );
+	int _getBitNum( unsigned short number );
+
 //  CACHE
-    int     _cacheOffsetFromCubeEdge( int x, int y, int z, int e );
+//	cache stores int value for every edge in the vertex field
+    // alloc cache x*y*z
     int*    _cacheAlloc( int fieldX, int fieldY, int fieldZ );
+    // free cache
     void    _cacheFree();
-    int     _cacheVertex( int x, int y, int z, int e );
+    // set cache to -1
     void    _cacheClear();
 
+    int     _cacheVertex( int x, int y, int z, int e );
+    // params: cube position (x,y,z), edge index
+    // returns: cache index for given edge
+    int     _cacheOffsetFromCubeEdge( int x, int y, int z, int e );
+
+	// cache field int[]
+    int*    cacheField;
+    // cache size x, y, z
     int     cacheSizeX;
     int     cacheSizeY;
     int     cacheSizeZ;
-    int     vertexNum;
-    int*    cacheField;
+    // cache size x*y*z * 4[int]
     int     cacheSize;
 
+    int     vertexNum;
 
 public:
     MarchingCubes( VoxelField& f );
