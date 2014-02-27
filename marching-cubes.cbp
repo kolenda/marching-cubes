@@ -7,8 +7,8 @@
 		<Option compiler="gcc" />
 		<Build>
 			<Target title="Debug">
-				<Option output="bin\Debug\marching-cubes" prefix_auto="1" extension_auto="1" />
-				<Option object_output="obj\Debug\" />
+				<Option output="bin/Debug/marching-cubes" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Compiler>
@@ -23,8 +23,8 @@
 				</Linker>
 			</Target>
 			<Target title="Release">
-				<Option output="bin\Release\marching-cubes" prefix_auto="1" extension_auto="1" />
-				<Option object_output="obj\Release\" />
+				<Option output="bin/Release/marching-cubes" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release/" />
 				<Option type="0" />
 				<Option compiler="gcc" />
 				<Compiler>
@@ -50,16 +50,21 @@
 			<Add library="glew_static" />
 			<Add directory="lib" />
 		</Linker>
-		<Unit filename="glew\glew.c">
+		<Unit filename="glew/glew.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="include\MarchingCubes.h" />
-		<Unit filename="include\VoxelField.h" />
+		<Unit filename="include/MarchingCubes.h" />
+		<Unit filename="include/VoxelField.h" />
 		<Unit filename="main.cpp" />
-		<Unit filename="src\MarchingCubes.cpp" />
+		<Unit filename="src/MarchingCubes.cpp" />
+		<Unit filename="src/MarchingCubesAnalyze.cpp" />
+		<Unit filename="src/MarchingCubesCache.cpp" />
+		<Unit filename="src/MarchingCubesRender.cpp" />
+		<Unit filename="src/VoxelField.cpp" />
 		<Extensions>
 			<code_completion />
 			<debugger />
+			<envvars />
 		</Extensions>
 	</Project>
 </CodeBlocks_project_file>

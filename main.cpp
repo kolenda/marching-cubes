@@ -6,12 +6,8 @@
 #include <GL/glut.h>
 
 #include <iostream>
-//#include <stdio.h>
-
 #include <stdio.h>
 #include <string>
-
-//#include <gl/gl.h>
 #include <windows.h>
 
 #include "include/VoxelField.h"
@@ -33,8 +29,6 @@ GLuint trianglesIndexedIndexBuffer = 0;
 
 VoxelField      cf;
 MarchingCubes   march(cf);
-//MarchingCubes   march;
-//VoxelField      cf;
 
 bool lighting = true;
 bool anim = true;
@@ -51,9 +45,21 @@ float zoomOut   = 40.0f;
 int currentAxis = 0;
 int debugAxes[3] = {0,0,0};
 
-int	GRID_SIZE_X = 10;	//					40;
-int GRID_SIZE_Y = 10;	//					40;
-int GRID_SIZE_Z = 10;	//					40;
+const int MAX_TRIS    = 10000;
+MarchingCubes::Vertex       verts[MAX_TRIS];
+MarchingCubes::TriangleI    trisI[MAX_TRIS];
+int vertexNum = 0;
+int triNum = 0;
+
+
+int	GRID_SIZE_X = 3;	//10;	//					40;
+int GRID_SIZE_Y = 2;	//10;	//					40;
+int GRID_SIZE_Z = 2;	//10;	//					40;
+
+struct AxisVert {
+    GLfloat pos[3];
+    GLubyte color[3];
+};
 
 GLfloat ambientColor[] = {0.2f, 0.2f, 0.2f, 1.0f};
 GLfloat lightColorRed[] = {1.0f, 0.0f, 0.0f, 1.0f};
@@ -64,16 +70,15 @@ GLfloat lightColorRedHalf[] = {0.5f, 0.0f, 0.0f, 1.0f};
 GLfloat lightColorGreenHalf[] = {0.0f, 0.5f, 0.0f, 1.0f};
 GLfloat lightColorBlueHalf[] = {0.0f, 0.0f, 0.5f, 1.0f};
 GLfloat lightColorWhiteHalf[] = {0.5f, 0.5f, 0.5f, 1.0f};
-GLfloat lightPosRed[] = {40.0f, 0.0f, 0.0f, 1.0f};
-GLfloat lightPosGreen[] = {0.0f, 40.0f, 0.0f, 1.0f};
-GLfloat lightPosBlue[] = {0.0f, 0.0f, 40.0f, 1.0f};
+GLfloat lightPosRed[] = {10.0f, 0.0f, 0.0f, 1.0f};
+GLfloat lightPosGreen[] = {0.0f, 10.0f, 0.0f, 1.0f};
+GLfloat lightPosBlue[] = {0.0f, 0.0f, 10.0f, 1.0f};
 GLfloat lightPosWhite[] = {0.0f, 0.0f, 0.0f, 1.0f};
+GLfloat materialColorSpec[] = {0.0f, 0.0f, 0.0f, 1.0f};
 
+void drawTrianglesIndexedWireframe( MarchingCubes::Vertex* verts, MarchingCubes::TriangleI* trisI, int triNum );
+void drawTrianglesIndexedNormals( MarchingCubes::Vertex* verts, MarchingCubes::TriangleI* trisI, int triNum );
 
-struct AxisVert {
-    GLfloat pos[3];
-    GLubyte color[3];
-};
 
 void printText( float x, float y, std::string str )
 {
@@ -91,36 +96,41 @@ void setupLight( bool on )
         glEnable( GL_LIGHT0 );
         glEnable( GL_LIGHT1 );
         glEnable( GL_LIGHT2 );
-        glDisable	// Enable
-					( GL_LIGHT3 );
+        glDisable(	//
+//        glEnable(
+				GL_LIGHT3 );
+
         glEnable( GL_NORMALIZE );
         glShadeModel( GL_SMOOTH );	// FLAT );
-
-        glLightModelfv( GL_LIGHT_MODEL_AMBIENT, ambientColor );
-
-        glMaterialfv( GL_FRONT_AND_BACK, GL_DIFFUSE, lightColorWhite );
-        glMaterialfv( GL_FRONT_AND_BACK, GL_SPECULAR, lightColorWhite );
-        glMaterialf( GL_FRONT_AND_BACK, GL_SHININESS, 10);
-
-        glLightfv( GL_LIGHT0, GL_DIFFUSE, lightColorRedHalf );
-        glLightfv( GL_LIGHT0, GL_SPECULAR, lightColorRedHalf );
-        glLightfv( GL_LIGHT0, GL_POSITION, lightPosRed );
-
-        glLightfv( GL_LIGHT1, GL_DIFFUSE, lightColorGreenHalf );
-        glLightfv( GL_LIGHT1, GL_SPECULAR, lightColorGreenHalf );
-        glLightfv( GL_LIGHT1, GL_POSITION, lightPosGreen );
-
-        glLightfv( GL_LIGHT2, GL_DIFFUSE, lightColorBlueHalf );
-        glLightfv( GL_LIGHT2, GL_SPECULAR, lightColorBlueHalf );
-        glLightfv( GL_LIGHT2, GL_POSITION, lightPosBlue );
-
-        glLightfv( GL_LIGHT3, GL_DIFFUSE, lightColorWhiteHalf );
-        glLightfv( GL_LIGHT3, GL_SPECULAR, lightColorWhiteHalf );
-        glLightfv( GL_LIGHT3, GL_POSITION, lightPosWhite );
     }
     else {
         glDisable( GL_LIGHTING );
     }
+}
+
+void setupLightParams()
+{
+	glLightModelfv( GL_LIGHT_MODEL_AMBIENT, ambientColor );
+
+	glMaterialfv( GL_FRONT_AND_BACK, GL_DIFFUSE, lightColorWhite );
+	glMaterialfv( GL_FRONT_AND_BACK, GL_SPECULAR, materialColorSpec );
+	glMaterialf( GL_FRONT_AND_BACK, GL_SHININESS, 0);//10);
+
+	glLightfv( GL_LIGHT0, GL_DIFFUSE, lightColorRed );	//Half );
+	glLightfv( GL_LIGHT0, GL_SPECULAR, materialColorSpec );	//lightColorRedHalf );
+	glLightfv( GL_LIGHT0, GL_POSITION, lightPosRed );
+
+	glLightfv( GL_LIGHT1, GL_DIFFUSE, lightColorGreen );	//Half );
+	glLightfv( GL_LIGHT1, GL_SPECULAR, materialColorSpec );	//lightColorGreenHalf );
+	glLightfv( GL_LIGHT1, GL_POSITION, lightPosGreen );
+
+	glLightfv( GL_LIGHT2, GL_DIFFUSE, lightColorBlue );	//Half );
+	glLightfv( GL_LIGHT2, GL_SPECULAR, materialColorSpec );	//lightColorBlueHalf );
+	glLightfv( GL_LIGHT2, GL_POSITION, lightPosBlue );
+
+	glLightfv( GL_LIGHT3, GL_DIFFUSE, lightColorWhite );	//Half );
+	glLightfv( GL_LIGHT3, GL_SPECULAR, materialColorSpec );	//lightColorWhiteHalf );
+	glLightfv( GL_LIGHT3, GL_POSITION, lightPosWhite );
 }
 
 int setView()
@@ -135,7 +145,8 @@ int setView()
     glRotatef( upAngle, 1.0f, 0.0f, 0.0f );
     glRotatef( sideAngle, 0.0f, 1.0f, 0.0f );
     glTranslatef( -cf.getSizeX()/2, -cf.getSizeY()/2, -cf.getSizeZ()/2 );
-    //
+
+
     glEnable	//
 //    glDisable
 			( GL_CULL_FACE );
@@ -226,12 +237,6 @@ void drawTrianglesIndexedVBO()
 }*/
 
 
-#define MAX_TRIS    10000
-MarchingCubes::Vertex       verts[MAX_TRIS];
-MarchingCubes::TriangleI    trisI[MAX_TRIS];
-int vertexNum = 0;
-int triNum = 0;
-
 void updateGeometry()
 {
 	for( int i = 0; i < MAX_TRIS; i++ ) {
@@ -239,7 +244,8 @@ void updateGeometry()
 		verts[i].used = 0;
 	}
 
-    march.fillInTrianglesIndexed( verts, MAX_TRIS, trisI, MAX_TRIS, vertexNum, triNum );
+	int triangleNum = march.fillInTrianglesIndexed( verts, MAX_TRIS, trisI, MAX_TRIS, vertexNum, triNum );
+    int x = 5;
 		//fillTrianglesIndexedVBO( verts, vertexNum, trisI, triNum );
 }
 
@@ -284,28 +290,55 @@ void drawTrianglesIndexed( MarchingCubes::Vertex* verts, MarchingCubes::Triangle
             glVertex3f( x, y, z+2 );
         glEnd();
 
-        setupLight( lighting );
+        setupLight( false );	//lighting );
 
-
-		glBegin( GL_LINES );
-		for( int i = 0; i < triNum; i++ ) {	//	triangle
-
-			MarchingCubes::TriangleI& tri = trisI[i];
-
-			for( int j = 0; j < 3; j++ ) {	//	corner
-				int vertIndex = tri[j];
-				MarchingCubes::Vector3F& pos = verts[vertIndex].pos;
-				glVertex3f( pos.f[0], pos.f[1], pos.f[2] );
-
-				int vertIndex2 = tri[(j+1)%3];
-				MarchingCubes::Vector3F& pos2 = verts[vertIndex2].pos;
-				glVertex3f( pos2.f[0], pos2.f[1], pos2.f[2] );
-			}
-		}
-		glEnd();
+        glColor3f( 1.0f, 1.0f, 1.0f );
+		drawTrianglesIndexedWireframe( verts, trisI, triNum );
+		drawTrianglesIndexedNormals( verts, trisI, triNum );
 	}
 }
 
+void drawTrianglesIndexedWireframe( MarchingCubes::Vertex* verts, MarchingCubes::TriangleI* trisI, int triNum )
+{
+	glBegin( GL_LINES );
+	for( int i = 0; i < triNum; i++ ) {	//	triangle
+
+		MarchingCubes::TriangleI& tri = trisI[i];
+
+		for( int j = 0; j < 3; j++ ) {	//	corner
+			int vertIndex = tri[j];
+			MarchingCubes::Vector3F& pos = verts[vertIndex].pos;
+			glVertex3f( pos.f[0], pos.f[1], pos.f[2] );
+
+			int vertIndex2 = tri[(j+1)%3];
+			MarchingCubes::Vector3F& pos2 = verts[vertIndex2].pos;
+			glVertex3f( pos2.f[0], pos2.f[1], pos2.f[2] );
+		}
+	}
+	glEnd();
+}
+void drawTrianglesIndexedNormals( MarchingCubes::Vertex* verts, MarchingCubes::TriangleI* trisI, int triNum )
+{
+	glColor3f( 1.0f, 1.0f, 1.0f );
+	glLineWidth( 2.0f );
+
+	float NORM_LEN = 0.4f;
+	glBegin( GL_LINES );
+	for( int i = 0; i < triNum; i++ ) {	//	triangle
+		MarchingCubes::TriangleI& tri = trisI[i];
+		for( int j = 0; j < 3; j++ ) {	//	corner
+			int vertIndex = tri[j];
+			MarchingCubes::Vector3F& pos = verts[vertIndex].pos;
+			MarchingCubes::Vector3F& norm = verts[vertIndex].norm;
+
+			glVertex3f( pos.f[0], pos.f[1], pos.f[2] );
+			glVertex3f( pos.f[0] + norm.f[0]*NORM_LEN,
+						pos.f[1] + norm.f[1]*NORM_LEN,
+						pos.f[2] + norm.f[2]*NORM_LEN );
+		}
+	}
+	glEnd();
+}
 
 void generateAxesVBO() {
     const GLfloat axExt = 40.0f;
@@ -406,7 +439,9 @@ void drawAxes()
         glColor3f( 0.0f, 0.0f, 1.0f );
         glVertex3f( 0, 0, cf.getSizeZ() );
     glEnd();
+	glColor3f( 1.0f, 1.0f, 1.0f );
 }
+
 void drawTris( float x, float y, float z, MarchingCubes::TriangleF* tris, int triNum )
 {
 //	int counter = 0;
@@ -444,7 +479,8 @@ void drawEdges( float x, float y, float z, MarchingCubes::TriangleF* tris, int t
 	for( int t = 0; t < triNum; t++ ) {
 		MarchingCubes::TriangleF&     tri = tris[t];
 
-		glColor3f( 0.0f, 0.0f, 0.0f );
+        glColor3f( 1.0f, 1.0f, 1.0f );
+//		glColor3f( 0.0f, 0.0f, 0.0f );
 		glVertex3f( tri.v[0].pos.f[0]+x, tri.v[0].pos.f[1]+y, tri.v[0].pos.f[2]+z );
 		glVertex3f( tri.v[1].pos.f[0]+x, tri.v[1].pos.f[1]+y, tri.v[1].pos.f[2]+z );
 
@@ -552,12 +588,25 @@ void iterate()
 
 void drawFrame()
 {
-	setupLight( lighting );
+	/* OpenGL animation code goes here */
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 	setView();
 
-	drawTrianglesIndexed( verts, trisI, triNum );
+	setupLightParams();
+	setupLight( lighting );
 
+	drawTrianglesIndexed( verts, trisI, triNum );
 //	iterate();
+	setupLight( false );
+	drawAxes();
+
+	glLoadIdentity ();
+	glColor3f( 1, 1, 1 );
+	printTime();
+
+	print = false;
 }
 
 
@@ -631,24 +680,17 @@ int WINAPI WinMain(HINSTANCE hInstance,
                           NULL,
                           hInstance,
                           NULL);
-//*/
+
     ShowWindow(hwnd, nCmdShow);
-
-
 
     /* enable OpenGL for the window */
     EnableOpenGL(hwnd, &hDC, &hRC);
-
 
     char *myargv [1];
     int myargc=1;
     myargv [0]=strdup ("Myappname");
 
     glutInit( &myargc, myargv );
-
-//glutInitDisplayMode( GLUT_RGBA | GLUT_DEPTH );	//| GLUT_DOUBLE);
-//glutInitWindowSize(800,600);
-//glutCreateWindow("GLUT");
 
 	cout<<"Renderer = "<<glGetString(GL_RENDERER)<<endl<<endl;
 	cout<<"Version = "<<glGetString(GL_VERSION)<<endl<<endl;
@@ -662,35 +704,15 @@ int WINAPI WinMain(HINSTANCE hInstance,
 		return 0;
 	}
 
-//glewInit();
 printf("OpenGL version supported by this platform (%s): \n", glGetString(GL_VERSION));
-
-
-//	glGenBuffers = (PFNGLGENBUFFERSPROC)wglGetProcAddress("glGenBuffers");
-
-
-//    glewInit();
-//	GLenum err3 = glutCreateWindow("GLEW Test");
-//if (GLEW_OK != err3)
-//{
-//  fprintf(stderr, "Error: %s\n", glewGetErrorString(err3));
-//}
-/*GLenum err = glewInit();
-if (GLEW_OK != err)
-{
-  fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
-}*/
-
 
 //    generateAxesVBO();
 //    generateTrianglesVBO();
 //    generateTrianglesIndexedVBO();
 
 
-		march.init();
-		cf.setSize(
-				GRID_SIZE_X, GRID_SIZE_Y, GRID_SIZE_Z );
-
+	march.init();
+//	cf.setSize( GRID_SIZE_X, GRID_SIZE_Y, GRID_SIZE_Z );
 
     /* program main loop */
     while (!bQuit)
@@ -715,41 +737,19 @@ if (GLEW_OK != err)
 //				phase += 0.05;
 			}
 							phase = 59.35;
-			updateVoxelField( phase );
+//			updateVoxelField( phase );
 
-/*	cf.setVal( 0,0,0, -5 );
-	cf.setVal( 0,0,1, 10 );
-	cf.setVal( 0,1,0, 10 );
-	cf.setVal( 1,0,0, 10 );
-
-	cf.setVal( 1,1,1, 10 );
-	cf.setVal( 1,1,0, -5 );
-	cf.setVal( 1,0,1, -5 );
-	cf.setVal( 0,1,1, -5 );*/
-
+// TODO: 3 - normal problem?
+cf.setAmbiguousCase( 5 );
 
             if( anim || geomNeedsUpdate ) {
                 geomNeedsUpdate = false;
                 updateGeometry() ;
             }
 
-            /* OpenGL animation code goes here */
-            glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-				drawFrame();
+			drawFrame();
+			SwapBuffers(hDC);
 //            draw();
-
-
-            setupLight( false );
-            drawAxes();
-
-			glLoadIdentity ();
-			glColor3f( 1, 1, 1 );
-			printTime();
-
-            print = false;
-            SwapBuffers(hDC);
         }
     }
 //    deleteAxesVBO();
@@ -834,16 +834,16 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 case 'Z':
                     currentAxis = 2;
                 break;
+                case 'E':
+                    drawEdgesBool = !drawEdgesBool;
+                break;
+
                 case VK_OEM_4:
                     if( debugAxes[currentAxis] > 0 )
                         debugAxes[currentAxis]--;
                 break;
                 case VK_OEM_6:
                     debugAxes[currentAxis]++;
-                break;
-
-                case 'E':
-                    drawEdgesBool = !drawEdgesBool;
                 break;
             }
         }
@@ -893,4 +893,3 @@ void DisableOpenGL (HWND hwnd, HDC hDC, HGLRC hRC)
     wglDeleteContext(hRC);
     ReleaseDC(hwnd, hDC);
 }
-

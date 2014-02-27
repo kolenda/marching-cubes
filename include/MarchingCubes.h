@@ -112,6 +112,7 @@ public:
 //      TriangleI tris[10];
   //      Vector3F normal;
 		unsigned char	capPlanes;
+		unsigned char	capPlanesTab[6];
     };
 
 	void	setOffsets( float sizex, float sizey, float sizez );
@@ -128,7 +129,10 @@ private:
     Vector3F            vertexOffset[8];
     // definition of edges, we have 12 of them, each is stored as 2 vertex indices
     int                 edgeToVertex[12][2];
+int planeToVertex[6][4];
 int planeToEdge[6][4];
+int currTriangle;
+int currVert;
 
     // returns index of axis parallel to the edge
     int         _getEdgeAxis( int edge );
@@ -145,12 +149,18 @@ int planeToEdge[6][4];
 
 
     void        _getPlaneEdges( int v1, int v2, int edges[4] );
+//	void		_getPlaneEdges( int plane, int edges[4] );
+
+    // TODO delete?
     int         _capSingleVertexPlane( MarchingCubesCase& cubeCase, int v1, int v2 );
+	int			_capPlane( MarchingCubes::Vertex* vert, MarchingCubes::TriangleI* tris, int x, int y, int z, int plane, int side );
 
 
 //  ++startup data++
     void        _fillVertices();
     void        _fillEdges();
+    void		_fillPlanes();
+
     int         _findEdge( int v1, int v2 );
 //  --startup data--
 
@@ -170,10 +180,7 @@ int planeToEdge[6][4];
 //  --triangle table generation--
 
 
-//TODO remove
-int _removeExcessiveTriangles( int i );
-bool _vertexIsAtAxisSide( int v, int axis, int sign )
-
+bool _vertexIsAtAxisSide( int v, int axis, int sign );
 
 
     int         _bitsToCode( float verts[8] );
@@ -184,7 +191,7 @@ bool _vertexIsAtAxisSide( int v, int axis, int sign )
     Vector3F    getHalfEdge( int edgeNum );
 
     void        _codeToSignTable( int code, int* tab );
-    bool        _vertexIsNegByAxis( int code, int axis );
+    bool        _vertexIsNegByAxis( int v, int axis );
     Vector3F   _getNormalFromBits( int bits );
 
     // prints all values from triangles table - for debug purposes
@@ -195,7 +202,8 @@ bool _vertexIsAtAxisSide( int v, int axis, int sign )
 
 	//	tools
 	inline bool _differentSign( int a, int b );
-	inline bool _sameSign( int a, int b );
+	//inline
+	bool _sameSign( int a, int b );
 	int _getBitNum( unsigned short number );
 
 //  CACHE
@@ -211,6 +219,7 @@ bool _vertexIsAtAxisSide( int v, int axis, int sign )
     // params: cube position (x,y,z), edge index
     // returns: cache index for given edge
     int     _cacheOffsetFromCubeEdge( int x, int y, int z, int e );
+	int		_cacheOffsetFromPlane( int x, int y, int z, int plane );
 
 	// cache field int[]
     int*    cacheField;
