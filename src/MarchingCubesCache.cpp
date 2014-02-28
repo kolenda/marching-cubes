@@ -32,7 +32,6 @@ int MarchingCubes::_cacheVertex( MarchingCubes::Vertex* vert, int x, int y, int 
 		res = currVert++;
 	}
 	return res;
-
 /*    int index = _cacheOffsetFromCubeEdge( x, y, z, e );
     if( cacheField[index] < 0 ) {
         cacheField[index] = vertexNum;

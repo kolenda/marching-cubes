@@ -53,7 +53,6 @@ int MarchingCubes::fillInTriangles( MarchingCubes::TriangleF tris[8] )
 
 int MarchingCubes::fillInTrianglesIndexed( MarchingCubes::Vertex* vert, int maxVert, MarchingCubes::TriangleI* tris, int maxTris, int& vertexNum, int& triNum )
 {
-//printf( "\n\n\n\n");
 	std::map<int,int>	capPlaneCache;
 
 	_cacheAlloc( field.getSizeX(), field.getSizeY(), field.getSizeZ() );
@@ -86,66 +85,14 @@ int MarchingCubes::fillInTrianglesIndexed( MarchingCubes::Vertex* vert, int maxV
                 for( ; triNum < cubeCase.numTri; triNum++ ) {
 					// get triangle edges
 					// get cache indexes for all 3 edges
-                    int index1 = 0;
-                    int index2 = 0;
-                    int index3 = 0;
-
 					// if we had cache initialized - use this value
                     int e1 = cubeCase.tris[triNum][0];
                     int e2 = cubeCase.tris[triNum][1];
                     int e3 = cubeCase.tris[triNum][2];
 
-//                    int cache1 = _cacheVertex( vert, x,y,z, e1 );
-                    int cache1 = _cacheOffsetFromCubeEdge( x,y,z, e1 );
-                    if( cacheField[cache1] >= 0 ) {
-                        index1 = cacheField[cache1];
-										vert[index1].used++;
-                    }
-                    else {
-						// allocate new vertex in vertex table
-                        cacheField[cache1] = currVert;
-                        Vector3F vec1 = getVertexFromEdge( e1 );
-                        //vert[currVert].norm = vec1;
-                        vec1.f[0] += x;
-                        vec1.f[1] += y;
-                        vec1.f[2] += z;
-                        vert[currVert].pos = vec1;
-                        index1 = currVert++;
-                    }
-
-//                    int cache2 = _cacheVertex( vert, x,y,z, e2 );
-                    int cache2 = _cacheOffsetFromCubeEdge( x,y,z, e2 );
-                    if( cacheField[cache2] >= 0 ) {
-                        index2 = cacheField[cache2];
-										vert[index2].used++;
-                    }
-                    else {
-                        cacheField[cache2] = currVert;
-                        Vector3F vec2 = getVertexFromEdge( e2 );
-                        //vert[currVert].norm = vec2;
-                        vec2.f[0] += x;
-                        vec2.f[1] += y;
-                        vec2.f[2] += z;
-                        vert[currVert].pos = vec2;
-                        index2 = currVert++;
-                    }
-
-//                    int cache3 = _cacheVertex( vert, x,y,z, e3 );
-                    int cache3 = _cacheOffsetFromCubeEdge( x,y,z, e3 );
-                    if( cacheField[cache3] >= 0 ) {
-                        index3 = cacheField[cache3];
-										vert[index3].used++;
-                    }
-                    else {
-                        cacheField[cache3] = currVert;
-                        Vector3F vec3 = getVertexFromEdge( e3 );
-						//vert[currVert].norm = vec3;
-                        vec3.f[0] += x;
-                        vec3.f[1] += y;
-                        vec3.f[2] += z;
-                        vert[currVert].pos = vec3;
-                        index3 = currVert++;
-                    }
+                    int index1 = _cacheVertex( vert, x,y,z, e1 );
+                    int index2 = _cacheVertex( vert, x,y,z, e2 );
+                    int index3 = _cacheVertex( vert, x,y,z, e3 );
 
 					// get 3 resulting vertices
                     Vector3F vec1 = vert[index1].pos;
@@ -226,32 +173,12 @@ int MarchingCubes::_capPlane( MarchingCubes::Vertex* vert, MarchingCubes::Triang
 	int* edges = planeToEdge[plane];
 
 	// TODO: just dirty hack for now
-	if( plane == 2 || plane == 3 )	//|| plane == 5 )
+	if( plane == 2 || plane == 3 )
 		side = 1 - side;
 
 	int index[4];	// = {-1};
-	for( int i = 0; i < 4; i++ ) {
-		int edge = edges[i];
-
-//		int cacheIdx = _cacheVertex( vert, x,y,z, edge );
-		int cacheIdx = _cacheOffsetFromCubeEdge( x,y,z, edge );
-		if( cacheField[cacheIdx] >= 0 ) {
-			index[i] = cacheField[cacheIdx];
-							vert[ index[i] ].used++;
-		}
-		else {
-			// allocate new vertex in vertex table
-			cacheField[cacheIdx] = currVert;
-			Vector3F vec1 = getVertexFromEdge( edge );
-			vec1.f[0] += x;
-			vec1.f[1] += y;
-			vec1.f[2] += z;
-			vert[currVert].pos = vec1;
-			index[i] = currVert++;
-
-			int x = 5;
-		}
-	}
+	for( int i = 0; i < 4; i++ )
+		index[i] = _cacheVertex( vert, x,y,z, edges[i] );
 
 	Vector3F vec1 = vert[ index[0] ].pos;
 	Vector3F vec2 = vert[ index[1] ].pos;
@@ -318,5 +245,4 @@ int MarchingCubes::_capPlane( MarchingCubes::Vertex* vert, MarchingCubes::Triang
 		tris[currTriangle].i[2] = index[2];
 		currTriangle++;
 	}
-
 }
