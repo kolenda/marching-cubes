@@ -215,7 +215,7 @@ bool _vertexIsAtAxisSide( int v, int axis, int sign );
     // set cache to -1
     void    _cacheClear();
 
-    int     _cacheVertex( int x, int y, int z, int e );
+    int     _cacheVertex( MarchingCubes::Vertex* vert, int x, int y, int z, int e );
     // params: cube position (x,y,z), edge index
     // returns: cache index for given edge
     int     _cacheOffsetFromCubeEdge( int x, int y, int z, int e );

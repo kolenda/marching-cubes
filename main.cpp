@@ -50,7 +50,7 @@ MarchingCubes::Vertex       verts[MAX_TRIS];
 MarchingCubes::TriangleI    trisI[MAX_TRIS];
 int vertexNum = 0;
 int triNum = 0;
-
+int activeTriangle = -1;
 
 int	GRID_SIZE_X = 3;	//10;	//					40;
 int GRID_SIZE_Y = 2;	//10;	//					40;
@@ -253,7 +253,8 @@ void drawTrianglesIndexed( MarchingCubes::Vertex* verts, MarchingCubes::Triangle
 {
 	glBegin( GL_TRIANGLES );
 	for( int i = 0; i < triNum; i++ ) {	//	triangle
-
+							if( activeTriangle >= 0 && activeTriangle != i )
+								continue;
 		MarchingCubes::TriangleI& tri = trisI[i];
 
 		for( int j = 0; j < 3; j++ ) {	//	corner
@@ -555,6 +556,12 @@ void printTime()
      printText( -1, -0.9, buff );
      sprintf( buff, "x:%d, y:%d, z:%d", debugAxes[0], debugAxes[1], debugAxes[2] );
      printText( -1, -0.8, buff );
+
+     sprintf( buff, "actTri:%d, i0:%d, i1:%d, i2:%d",
+					activeTriangle, trisI[activeTriangle].i[0],
+					trisI[activeTriangle].i[1], trisI[activeTriangle].i[2] );
+     printText( -1, -0.7, buff );
+     //activeTriangle
 }
 
 void iterate()
@@ -844,6 +851,14 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 break;
                 case VK_OEM_6:
                     debugAxes[currentAxis]++;
+                break;
+
+                case VK_OEM_PLUS:
+                	activeTriangle++;
+                break;
+                case VK_OEM_MINUS:
+                	if( activeTriangle >= 0 )
+						activeTriangle--;
                 break;
             }
         }

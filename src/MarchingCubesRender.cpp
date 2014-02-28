@@ -53,6 +53,7 @@ int MarchingCubes::fillInTriangles( MarchingCubes::TriangleF tris[8] )
 
 int MarchingCubes::fillInTrianglesIndexed( MarchingCubes::Vertex* vert, int maxVert, MarchingCubes::TriangleI* tris, int maxTris, int& vertexNum, int& triNum )
 {
+//printf( "\n\n\n\n");
 	std::map<int,int>	capPlaneCache;
 
 	_cacheAlloc( field.getSizeX(), field.getSizeY(), field.getSizeZ() );
@@ -91,8 +92,12 @@ int MarchingCubes::fillInTrianglesIndexed( MarchingCubes::Vertex* vert, int maxV
 
 					// if we had cache initialized - use this value
                     int e1 = cubeCase.tris[triNum][0];
+                    int e2 = cubeCase.tris[triNum][1];
+                    int e3 = cubeCase.tris[triNum][2];
+
+//                    int cache1 = _cacheVertex( vert, x,y,z, e1 );
                     int cache1 = _cacheOffsetFromCubeEdge( x,y,z, e1 );
-                    if( cacheField[cache1] > 0 ) {
+                    if( cacheField[cache1] >= 0 ) {
                         index1 = cacheField[cache1];
 										vert[index1].used++;
                     }
@@ -108,9 +113,9 @@ int MarchingCubes::fillInTrianglesIndexed( MarchingCubes::Vertex* vert, int maxV
                         index1 = currVert++;
                     }
 
-                    int e2 = cubeCase.tris[triNum][1];
+//                    int cache2 = _cacheVertex( vert, x,y,z, e2 );
                     int cache2 = _cacheOffsetFromCubeEdge( x,y,z, e2 );
-                    if( cacheField[cache2] > 0 ) {
+                    if( cacheField[cache2] >= 0 ) {
                         index2 = cacheField[cache2];
 										vert[index2].used++;
                     }
@@ -125,9 +130,9 @@ int MarchingCubes::fillInTrianglesIndexed( MarchingCubes::Vertex* vert, int maxV
                         index2 = currVert++;
                     }
 
-                    int e3 = cubeCase.tris[triNum][2];
+//                    int cache3 = _cacheVertex( vert, x,y,z, e3 );
                     int cache3 = _cacheOffsetFromCubeEdge( x,y,z, e3 );
-                    if( cacheField[cache3] > 0 ) {
+                    if( cacheField[cache3] >= 0 ) {
                         index3 = cacheField[cache3];
 										vert[index3].used++;
                     }
@@ -227,8 +232,10 @@ int MarchingCubes::_capPlane( MarchingCubes::Vertex* vert, MarchingCubes::Triang
 	int index[4];	// = {-1};
 	for( int i = 0; i < 4; i++ ) {
 		int edge = edges[i];
+
+//		int cacheIdx = _cacheVertex( vert, x,y,z, edge );
 		int cacheIdx = _cacheOffsetFromCubeEdge( x,y,z, edge );
-		if( cacheField[cacheIdx] > 0 ) {
+		if( cacheField[cacheIdx] >= 0 ) {
 			index[i] = cacheField[cacheIdx];
 							vert[ index[i] ].used++;
 		}
@@ -276,18 +283,18 @@ int MarchingCubes::_capPlane( MarchingCubes::Vertex* vert, MarchingCubes::Triang
 
 	//*	// add normal to the cache
 
-	Vector3F normalSum = normal + normal2;
-    for( int ii = 0; ii < 4; ii++ )
-		vert[ index[ii] ].norm += normalSum;
+//	Vector3F normalSum = normal + normal2;
+//    for( int ii = 0; ii < 4; ii++ )
+//		vert[ index[ii] ].norm += normalSum;
 
-/*	vert[ index[0] ].norm += normal;
+	vert[ index[0] ].norm += normal;
 	vert[ index[1] ].norm += normal;
 	vert[ index[2] ].norm += normal;
 
 	vert[ index[1] ].norm += normal2;
 	vert[ index[2] ].norm += normal2;
 	vert[ index[3] ].norm += normal2;
-*/
+
 
 	if( side == 0 ) {
 		tris[currTriangle].i[0] = index[0];

@@ -12,19 +12,38 @@
 
 
 // if there's no allocated vertex in given position - create one
-int MarchingCubes::_cacheVertex( int x, int y, int z, int e )
+int MarchingCubes::_cacheVertex( MarchingCubes::Vertex* vert, int x, int y, int z, int e )
 {
-    int index = _cacheOffsetFromCubeEdge( x, y, z, e );
+	int res = -1;
 
+	int cache1 = _cacheOffsetFromCubeEdge( x,y,z, e );
+	if( cacheField[cache1] >= 0 ) {
+		res = cacheField[cache1];
+						vert[res].used++;
+	}
+	else {
+		// allocate new vertex in vertex table
+		cacheField[cache1] = currVert;
+		Vector3F vec1 = getVertexFromEdge( e );
+		vec1.f[0] += x;
+		vec1.f[1] += y;
+		vec1.f[2] += z;
+		vert[currVert].pos = vec1;
+		res = currVert++;
+	}
+	return res;
+
+/*    int index = _cacheOffsetFromCubeEdge( x, y, z, e );
     if( cacheField[index] < 0 ) {
         cacheField[index] = vertexNum;
         vertexNum++;
-    }
-    return index;
+    }*/
+//    return index;
 }
 
 int MarchingCubes::_cacheOffsetFromCubeEdge( int x, int y, int z, int e )
 {
+//	printf( "---_cacheOffsetFromCubeEdge: x,y,z, e: %d,%d,%d, %d", x,y,z, e );
 	// if the edge has 'smaller' reflection, take the smaller one and move to the next cube
     if( _getEdgeBySymmetry(e,0) < e ) {
         x++;
@@ -40,7 +59,9 @@ int MarchingCubes::_cacheOffsetFromCubeEdge( int x, int y, int z, int e )
     }
 
     int res = x + y * cacheSizeX + z*cacheSizeX*cacheSizeY;
-    res = (res * 4 ) + e;
+    res = (res * 4) + e;
+
+//	printf( " ,  res: %d\n", res );
 
     return res;
 }
