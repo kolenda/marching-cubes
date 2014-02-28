@@ -105,7 +105,7 @@ int MarchingCubes::fillInTrianglesIndexed( MarchingCubes::Vertex* vert, int maxV
 					//	compute face normal
                     Vector3F  normal;
                     getCrossProduct( delta1.f, delta2.f, normal.f );
-//                    normal.normalise();
+normal.normalise();
 
 					// add normal to the cache
                     vert[index1].norm += normal;
@@ -174,6 +174,8 @@ int MarchingCubes::_capPlane( MarchingCubes::Vertex* vert, MarchingCubes::Triang
 
 	// TODO: just dirty hack for now
 	if( plane == 2 || plane == 3 )
+		;
+	else
 		side = 1 - side;
 
 	int index[4];	// = {-1};
@@ -205,8 +207,8 @@ int MarchingCubes::_capPlane( MarchingCubes::Vertex* vert, MarchingCubes::Triang
 		getCrossProduct( delta2.f, delta1.f, normal.f );
 		getCrossProduct( delta22.f, delta21.f, normal2.f );
 	}
-//	normal.normalise();
-//	normal2.normalise();
+normal.normalise();
+normal2.normalise();
 
 	//*	// add normal to the cache
 

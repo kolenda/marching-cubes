@@ -132,6 +132,23 @@ class VoxelField   {
     // it's not really used ATM
     float       extentX, extentY, extentZ;
 
+	inline double	findnoise2(double x,double y)
+	{
+		int n=(int)x+(int)y*57;
+		n=(n<<13)^n;
+		int nn=(n*(n*n*60493+19990303)+1376312589)&0x7fffffff;
+		return 1.0-((double)nn/1073741824.0);
+	}
+	inline double	interpolate(double a,double b,double x)
+	{
+		double ft=x * 3.1415927;
+		double f=(1.0-cos(ft))* 0.5;
+		return a*(1.0-f)+b*f;
+	}
+
+
+	double	noise( double x, double y );
+
 public:
     VoxelField();
     VoxelField( int x, int y, int z );
@@ -156,6 +173,9 @@ public:
     void addSphere( float fx, float fy, float fz, float frad );
 
 	void	setAmbiguousCase( int num );
+	void	setSnake( int num );
+	void	setSpheres( float phase );
+	void	setPerlinNoise( int num );
 
     int getSizeX() { return sizeX; }
     int getSizeY() { return sizeY; }

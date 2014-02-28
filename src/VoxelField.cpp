@@ -143,6 +143,46 @@ void VoxelField::addSphere( float fx, float fy, float fz, float frad ) {
 	}
 }
 
+void VoxelField::setSnake( int num )
+{
+	setSize( 2, 2, 2 );
+	if( num == 0 ) {
+		setVal( 0,0,0, -5 );
+		setVal( 0,0,1, -5 );
+		setVal( 0,1,0, 10 );
+		setVal( 0,1,1, -5 );
+
+		setVal( 1,0,0, 10 );
+		setVal( 1,0,1, 10 );
+		setVal( 1,1,0, 10 );
+		setVal( 1,1,1, -5 );
+	}
+	else if( num == 1 ) {
+		setVal( 1,0,0, -5 );
+		setVal( 1,0,1, -5 );
+		setVal( 1,1,0, 10 );
+		setVal( 1,1,1, -5 );
+
+		setVal( 0,0,0, 10 );
+		setVal( 0,0,1, 10 );
+		setVal( 0,1,0, 10 );
+		setVal( 0,1,1, -5 );
+	}
+
+
+	else if( num == 2 ) {
+		setVal( 0,1,0, -5 );
+		setVal( 0,1,1, -5 );
+		setVal( 0,0,0, 10 );
+		setVal( 0,0,1, -5 );
+
+		setVal( 1,1,0, 10 );
+		setVal( 1,1,1, 10 );
+		setVal( 1,0,0, 10 );
+		setVal( 1,0,1, -5 );
+	}
+}
+
 void VoxelField::setAmbiguousCase( int num )
 {
 	if( num == 0 ) {
@@ -258,4 +298,49 @@ void VoxelField::setAmbiguousCase( int num )
 		setVal( 1,1,2, -5 );
 	}
 
+}
+
+void VoxelField::setSpheres( float phase )
+{
+	setAllValues( -0.5f );
+	float x = 0.3 * getSizeX() * sin(phase*0.1) + 0.5 * getSizeX();
+	float y = 0.3 * getSizeY() * cos(phase*0.2) + 0.5 * getSizeY();
+	float z = 0.3 * getSizeZ() * sin(1+phase*0.15) + 0.5 * getSizeZ();
+	float rad = getSizeX() / 3;
+	addSphere( x, y, z, rad );
+	addSphere( y, z, x, rad );
+	addSphere( z, x, y, rad );
+
+	addSphere( z, y, x, rad );
+	addSphere( y, x, z, rad );
+	addSphere( x, z, y, rad );
+}
+
+double VoxelField::noise( double x,double y )
+{
+	double floorx=(double)((int)x);//This is kinda a cheap way to floor a double integer.
+	double floory=(double)((int)y);
+	double s,t,u,v;//Integer declaration
+
+	s=findnoise2(floorx,floory);
+	t=findnoise2(floorx+1,floory);
+	u=findnoise2(floorx,floory+1);//Get the surrounding pixels to calculate the transition.
+	v=findnoise2(floorx+1,floory+1);
+
+	double int1 = interpolate(s,t,x-floorx);//Interpolate between the values.
+	double int2 = interpolate(u,v,x-floorx);//Here we use x-floorx, to get 1st dimension. Don't mind the x-floorx thingie, it's part of the cosine formula.
+
+	return interpolate(int1,int2,y-floory);//Here we use y-floory, to get the 2nd dimension.
+}
+
+void VoxelField::setPerlinNoise( int num )
+{
+	for( int xx = 0; xx < sizeX; xx++ ) {
+		for( int yy = 0; yy < sizeY; yy++ ) {
+			for( int zz = 0; zz < sizeZ; zz++ ) {
+				double val = noise( xx, yy );
+				setVal( xx, yy, zz, val );
+			}
+		}
+	}
 }

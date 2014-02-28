@@ -52,9 +52,9 @@ int vertexNum = 0;
 int triNum = 0;
 int activeTriangle = -1;
 
-int	GRID_SIZE_X = 3;	//10;	//					40;
-int GRID_SIZE_Y = 2;	//10;	//					40;
-int GRID_SIZE_Z = 2;	//10;	//					40;
+int	GRID_SIZE_X = 20;
+int GRID_SIZE_Y = 20;
+int GRID_SIZE_Z = 20;
 
 struct AxisVert {
     GLfloat pos[3];
@@ -70,9 +70,9 @@ GLfloat lightColorRedHalf[] = {0.5f, 0.0f, 0.0f, 1.0f};
 GLfloat lightColorGreenHalf[] = {0.0f, 0.5f, 0.0f, 1.0f};
 GLfloat lightColorBlueHalf[] = {0.0f, 0.0f, 0.5f, 1.0f};
 GLfloat lightColorWhiteHalf[] = {0.5f, 0.5f, 0.5f, 1.0f};
-GLfloat lightPosRed[] = {10.0f, 0.0f, 0.0f, 1.0f};
-GLfloat lightPosGreen[] = {0.0f, 10.0f, 0.0f, 1.0f};
-GLfloat lightPosBlue[] = {0.0f, 0.0f, 10.0f, 1.0f};
+GLfloat lightPosRed[] = {30.0f, 0.0f, 0.0f, 1.0f};
+GLfloat lightPosGreen[] = {0.0f, 30.0f, 0.0f, 1.0f};
+GLfloat lightPosBlue[] = {0.0f, 0.0f, 30.0f, 1.0f};
 GLfloat lightPosWhite[] = {0.0f, 0.0f, 0.0f, 1.0f};
 GLfloat materialColorSpec[] = {0.0f, 0.0f, 0.0f, 1.0f};
 
@@ -146,13 +146,64 @@ int setView()
     glRotatef( sideAngle, 0.0f, 1.0f, 0.0f );
     glTranslatef( -cf.getSizeX()/2, -cf.getSizeY()/2, -cf.getSizeZ()/2 );
 
-
     glEnable	//
 //    glDisable
 			( GL_CULL_FACE );
     glEnable( GL_DEPTH_TEST );
 
     return 1;
+}
+
+void drawDebugAxes()
+{
+	if( wireframe )
+	{
+        float x = debugAxes[0];
+        float y = debugAxes[1];
+        float z = debugAxes[2];
+
+        setupLight( false );
+        glBegin(GL_LINES);
+            glColor3f( 1.0f, 1.0f, 1.0f );
+            glVertex3f( x, y, z );
+            glColor3f( 1.0f, 0.0f, 0.0f );
+            glVertex3f( x+2, y, z );
+
+            glColor3f( 1.0f, 1.0f, 1.0f );
+            glVertex3f( x, y, z );
+            glColor3f( 0.0f, 1.0f, 0.0f );
+            glVertex3f( x, y+2, z );
+
+            glColor3f( 1.0f, 1.0f, 1.0f );
+            glVertex3f( x, y, z );
+            glColor3f( 0.0f, 0.0f, 1.0f );
+            glVertex3f( x, y, z+2 );
+        glEnd();
+
+		float debugPlaneLen = 1.0f;
+		glDisable( GL_CULL_FACE );
+        glBegin(GL_QUADS);
+            glColor3f( 1.0f, 1.0f, 1.0f );
+            glVertex3f( x, y, z );
+            glVertex3f( x+debugPlaneLen, y, z );
+            glVertex3f( x+debugPlaneLen, y+debugPlaneLen, z );
+            glVertex3f( x, y+debugPlaneLen, z );
+
+            glVertex3f( x, y, z );
+            glVertex3f( x, y+debugPlaneLen, z );
+            glVertex3f( x, y+debugPlaneLen, z+debugPlaneLen );
+            glVertex3f( x, y, z+debugPlaneLen );
+
+            glVertex3f( x, y, z );
+            glVertex3f( x+debugPlaneLen, y, z );
+            glVertex3f( x+debugPlaneLen, y, z+debugPlaneLen );
+            glVertex3f( x, y, z+debugPlaneLen );
+		glEnd();
+//        setupLight( false );	//lighting );
+        glColor3f( 1.0f, 1.0f, 1.0f );
+		drawTrianglesIndexedWireframe( verts, trisI, triNum );
+		drawTrianglesIndexedNormals( verts, trisI, triNum );
+	}
 }
 
 /*void generateTrianglesVBO() {
@@ -268,35 +319,7 @@ void drawTrianglesIndexed( MarchingCubes::Vertex* verts, MarchingCubes::Triangle
 	}
 	glEnd();
 
-	if( wireframe ) {
-        float x = debugAxes[0];
-        float y = debugAxes[1];
-        float z = debugAxes[2];
-
-        setupLight( false );
-        glBegin(GL_LINES);
-            glColor3f( 1.0f, 1.0f, 1.0f );
-            glVertex3f( x, y, z );
-            glColor3f( 1.0f, 0.0f, 0.0f );
-            glVertex3f( x+2, y, z );
-
-            glColor3f( 1.0f, 1.0f, 1.0f );
-            glVertex3f( x, y, z );
-            glColor3f( 0.0f, 1.0f, 0.0f );
-            glVertex3f( x, y+2, z );
-
-            glColor3f( 1.0f, 1.0f, 1.0f );
-            glVertex3f( x, y, z );
-            glColor3f( 0.0f, 0.0f, 1.0f );
-            glVertex3f( x, y, z+2 );
-        glEnd();
-
-        setupLight( false );	//lighting );
-
-        glColor3f( 1.0f, 1.0f, 1.0f );
-		drawTrianglesIndexedWireframe( verts, trisI, triNum );
-		drawTrianglesIndexedNormals( verts, trisI, triNum );
-	}
+	drawDebugAxes();
 }
 
 void drawTrianglesIndexedWireframe( MarchingCubes::Vertex* verts, MarchingCubes::TriangleI* trisI, int triNum )
@@ -496,19 +519,7 @@ void drawEdges( float x, float y, float z, MarchingCubes::TriangleF* tris, int t
 
 int updateVoxelField( float phase )
 {
-	cf.setAllValues( -0.5f );
-	float x = 0.3 * cf.getSizeX() * sin(phase*0.1) + 0.5 * cf.getSizeX();
-	float y = 0.3 * cf.getSizeY() * cos(phase*0.2) + 0.5 * cf.getSizeY();
-	float z = 0.3 * cf.getSizeZ() * sin(1+phase*0.15) + 0.5 * cf.getSizeZ();
-	float rad = cf.getSizeX() / 3;
-	cf.addSphere( x, y, z, rad );
-	cf.addSphere( y, z, x, rad );
-	cf.addSphere( z, x, y, rad );
-
-	cf.addSphere( z, y, x, rad );
-	cf.addSphere( y, x, z, rad );
-	cf.addSphere( x, z, y, rad );
-
+	cf.setSpheres( phase );
 	return 1;
 }
 
@@ -532,15 +543,13 @@ int updateVoxelField( float phase )
 
 void printTime()
 {
-    static double lastTime = //0;	//
-							glutGet(GLUT_ELAPSED_TIME);
+    static double lastTime = glutGet(GLUT_ELAPSED_TIME);
 
     static int nbFrames = 0;
     static float fps = 0;
 
      // Measure speed
-     double currentTime = //0;	//
-							glutGet(GLUT_ELAPSED_TIME);
+     double currentTime = glutGet(GLUT_ELAPSED_TIME);
      nbFrames++;
      if ( currentTime - lastTime >= 1000.0 ){
          fps = double(nbFrames)*1000.0/
@@ -557,11 +566,20 @@ void printTime()
      sprintf( buff, "x:%d, y:%d, z:%d", debugAxes[0], debugAxes[1], debugAxes[2] );
      printText( -1, -0.8, buff );
 
-     sprintf( buff, "actTri:%d, i0:%d, i1:%d, i2:%d",
+			int debugCubeIdx = -1;
+			{
+				Cube2 cube = cf.getCube( debugAxes[0], debugAxes[1], debugAxes[2] );
+				cube.setGridSize( cf.getSizeX(), cf.getSizeY(), cf.getSizeZ() );
+
+				march.setValues( cube );
+				MarchingCubes::MarchingCubesCase &cubeCase = march.getCaseFromValues();
+				debugCubeIdx = cubeCase.index;
+			}
+     sprintf( buff, "actTri:%d, i0:%d, i1:%d, i2:%d,  case:%d",
 					activeTriangle, trisI[activeTriangle].i[0],
-					trisI[activeTriangle].i[1], trisI[activeTriangle].i[2] );
+					trisI[activeTriangle].i[1], trisI[activeTriangle].i[2], debugCubeIdx );
      printText( -1, -0.7, buff );
-     //activeTriangle
+
 }
 
 void iterate()
@@ -583,7 +601,6 @@ void iterate()
 			if( triNum )
 			{
 				drawTris( x, y, z, tris, triNum );
-
 
 /*				if( drawEdgesBool ) {
 					drawEdges( x, y, z, tris, triNum );
@@ -719,7 +736,7 @@ printf("OpenGL version supported by this platform (%s): \n", glGetString(GL_VERS
 
 
 	march.init();
-//	cf.setSize( GRID_SIZE_X, GRID_SIZE_Y, GRID_SIZE_Z );
+	cf.setSize( GRID_SIZE_X, GRID_SIZE_Y, GRID_SIZE_Z );
 
     /* program main loop */
     while (!bQuit)
@@ -741,13 +758,13 @@ printf("OpenGL version supported by this platform (%s): \n", glGetString(GL_VERS
         else
         {
 			if( anim ) {
-//				phase += 0.05;
+				phase += 0.05;
 			}
-							phase = 59.35;
-//			updateVoxelField( phase );
-
-// TODO: 3 - normal problem?
-cf.setAmbiguousCase( 5 );
+//							phase = //59.35;		//									23.85f;	//20,20,20
+			updateVoxelField( phase );
+//			cf.setPerlinNoise( 0 );
+//cf.setAmbiguousCase( 5 );
+//cf.setSnake( 0 );
 
             if( anim || geomNeedsUpdate ) {
                 geomNeedsUpdate = false;

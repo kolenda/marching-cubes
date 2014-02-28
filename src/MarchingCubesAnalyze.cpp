@@ -500,15 +500,15 @@ int MarchingCubes::_findSnake( int code )
                 int ax2 = ax2_ % 3;
                 int ax3 = 3 - (ax1+ax2);
 
-                int vRefl1 = _getVertexBySymmetry( v, ax1 );
-                int vRefl12 = _getVertexBySymmetry( vRefl1, ax2 );
-                int vRefl123 = _getVertexBySymmetry( vRefl12, ax3 );
+                int vRefl_1 = _getVertexBySymmetry( v, ax1 );
+                int vRefl_12 = _getVertexBySymmetry( vRefl_1, ax2 );
+                int vRefl_123 = _getVertexBySymmetry( vRefl_12, ax3 );
 
                 std::set<int> vertPath;
                 vertPath.insert( v );
-                vertPath.insert( vRefl1 );
-                vertPath.insert( vRefl12 );
-                vertPath.insert( vRefl123 );
+                vertPath.insert( vRefl_1 );
+                vertPath.insert( vRefl_12 );
+                vertPath.insert( vRefl_123 );
 
                 bool fail = false;
                 for( int i = 0; i < 8; i++ ) {
@@ -526,34 +526,38 @@ int MarchingCubes::_findSnake( int code )
                     }
                 }
                 if( !fail ) {
-                    int vRefl2 = _getVertexBySymmetry( v, ax2 );
-                    int vRefl3 = _getVertexBySymmetry( v, ax3 );
-                    int vRefl13 = _getVertexBySymmetry( vRefl1, ax3 );
-                    int vRefl23 = _getVertexBySymmetry( vRefl2, ax3 );
+                    int vRefl_2 = _getVertexBySymmetry( v, ax2 );
+                    int vRefl_3 = _getVertexBySymmetry( v, ax3 );
+                    int vRefl_13 = _getVertexBySymmetry( vRefl_1, ax3 );
+                    int vRefl_23 = _getVertexBySymmetry( vRefl_2, ax3 );
 
                     MarchingCubesCase& cubeCase = triangleTable[code];
-//                    cubeCase.normal = _getNormalFromBits( vRefl1 );
-                    cubeCase.normal[cubeCase.numTri] = _getNormalFromBits( vRefl1 );
-                    cubeCase.tris[ cubeCase.numTri ][0] = _findEdge(v, vRefl3);
-                    cubeCase.tris[ cubeCase.numTri ][1] = _findEdge(vRefl1, vRefl13);
-                    cubeCase.tris[ cubeCase.numTri ][2] = _findEdge(vRefl123, vRefl23);
+
+                    cubeCase.normal[cubeCase.numTri] = _getNormalFromBits( vRefl_1 );
+                    cubeCase.tris[ cubeCase.numTri ][0] = _findEdge(v, vRefl_3);
+                    cubeCase.tris[ cubeCase.numTri ][1] = _findEdge(vRefl_1, vRefl_13);
+                    cubeCase.tris[ cubeCase.numTri ][2] = _findEdge(vRefl_123, vRefl_23);
                     cubeCase.numTri++;
 
-//                    cubeCase.normal = _getNormalFromBits( vRefl1 );
-                    cubeCase.normal[cubeCase.numTri] = _getNormalFromBits( vRefl1 );
-                    cubeCase.tris[ cubeCase.numTri ][0] = _findEdge(v, vRefl2);
-                    cubeCase.tris[ cubeCase.numTri ][1] = _findEdge(v, vRefl3);
-                    cubeCase.tris[ cubeCase.numTri ][2] = _findEdge(vRefl123, vRefl23);
+                    cubeCase.normal[cubeCase.numTri] = _getNormalFromBits( vRefl_1 );
+                    cubeCase.tris[ cubeCase.numTri ][0] = _findEdge(v, vRefl_2);
+                    cubeCase.tris[ cubeCase.numTri ][1] = _findEdge(v, vRefl_3);
+                    cubeCase.tris[ cubeCase.numTri ][2] = _findEdge(vRefl_123, vRefl_23);
                     cubeCase.numTri++;
 
-//                    cubeCase.normal = _getNormalFromBits( vRefl1 );
-                    cubeCase.normal[cubeCase.numTri] = _getNormalFromBits( vRefl1 );
-                    cubeCase.tris[ cubeCase.numTri ][0] = _findEdge(vRefl2, vRefl12);
-                    cubeCase.tris[ cubeCase.numTri ][1] = _findEdge(v, vRefl2);
-                    cubeCase.tris[ cubeCase.numTri ][2] = _findEdge(vRefl123, vRefl23);
+                    cubeCase.normal[cubeCase.numTri] = _getNormalFromBits( vRefl_1 );
+                    cubeCase.tris[ cubeCase.numTri ][0] = _findEdge(vRefl_2, vRefl_12);
+                    cubeCase.tris[ cubeCase.numTri ][1] = _findEdge(v, vRefl_2);
+                    cubeCase.tris[ cubeCase.numTri ][2] = _findEdge(vRefl_123, vRefl_23);
                     cubeCase.numTri++;
 
-                    counter+=3;
+                    cubeCase.normal[cubeCase.numTri] = _getNormalFromBits( vRefl_1 );
+                    cubeCase.tris[ cubeCase.numTri ][0] = _findEdge(vRefl_1, vRefl_13);
+                    cubeCase.tris[ cubeCase.numTri ][1] = _findEdge(vRefl_13, vRefl_123);
+                    cubeCase.tris[ cubeCase.numTri ][2] = _findEdge(vRefl_123, vRefl_23);
+                    cubeCase.numTri++;
+
+                    counter += 4;
                     return counter;
                 }
             }
