@@ -105,12 +105,16 @@ int MarchingCubes::fillInTrianglesIndexed( MarchingCubes::Vertex* vert, int maxV
 					//	compute face normal
                     Vector3F  normal;
                     getCrossProduct( delta1.f, delta2.f, normal.f );
-normal.normalise();
 
-					// add normal to the cache
-                    vert[index1].norm += normal;
-                    vert[index2].norm += normal;
-                    vert[index3].norm += normal;
+                    // Check for 0 or we get NaN errors
+                    if( normal.isNotZero() ) {
+						normal.normalise();
+
+						// add normal to the cache
+						vert[index1].norm += normal;
+						vert[index2].norm += normal;
+						vert[index3].norm += normal;
+                    }
 
                     tris[currTriangle].i[0] = index1;
                     tris[currTriangle].i[1] = index2;
@@ -149,6 +153,9 @@ normal.normalise();
 	int	lenVector[10] = {0};
 
     for( int v = 0; v < currVert; v++ ) {
+			if( v == 148 ) {
+                int x = 5;
+			}
             if( vert[v].norm.length() < 0.5 ) {
                 int x = 5;
             }
@@ -161,7 +168,7 @@ normal.normalise();
     vertexNum = currVert;
     triNum = currTriangle;
 
-static  int ii = 0;	if( !ii ) {	ii ++;	printf( "currTriangle:%d currVert:%d", currTriangle, currVert );}
+//static  int ii = 0;	if( !ii ) {	ii ++;	printf( "currTriangle:%d currVert:%d", currTriangle, currVert );}
 
     return currTriangle;
 }

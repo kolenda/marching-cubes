@@ -29,8 +29,14 @@ int MarchingCubes::_cacheVertex( MarchingCubes::Vertex* vert, int x, int y, int 
 		vec1.f[1] += y;
 		vec1.f[2] += z;
 		vert[currVert].pos = vec1;
+		vert[currVert].norm.setValue( 0.0f, 0.0f, 0.0f );
+		vert[currVert].used = 0;
 		res = currVert++;
 	}
+
+					if( res == 148 ) {
+						int x = 5;
+					}
 	return res;
 /*    int index = _cacheOffsetFromCubeEdge( x, y, z, e );
     if( cacheField[index] < 0 ) {

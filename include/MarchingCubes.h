@@ -6,7 +6,7 @@
 
     Defines basic data structures and algorithms used to compute geometry
 
-    During initialization it analyzes all 256 possible cases and stores the result in special table:
+    During initialization it analyzes all 256 possible cases and stores the result in a table:
 
         MarchingCubes mc;
         mc.init();
@@ -19,7 +19,7 @@
 
     and ask for triangles for this case:
 
-        MarchingCubes::TriangleF     tris[8];
+        MarchingCubes::TriangleF     tris[4];
         int triNum = march.fillInTriangles( tris );
 
     Then you need to draw tris[0] to tris[triNum-1] - look at the TriangleF definition, it's really simple
@@ -85,6 +85,9 @@ public:
             float lenSqrRoot = sqrtf(len);
             return lenSqrRoot;
         }
+        bool isNotZero() {
+			return f[0] != 0.0f || f[1] != 0.0f || f[2] != 0.0f;
+        }
     };
     struct Vertex {
         Vector3F    pos;
@@ -129,8 +132,9 @@ private:
     Vector3F            vertexOffset[8];
     // definition of edges, we have 12 of them, each is stored as 2 vertex indices
     int                 edgeToVertex[12][2];
-int planeToVertex[6][4];
-int planeToEdge[6][4];
+	int					planeToVertex[6][4];
+	int					planeToEdge[6][4];
+
 int currTriangle;
 int currVert;
 

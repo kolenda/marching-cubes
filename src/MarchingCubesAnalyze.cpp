@@ -569,6 +569,10 @@ int MarchingCubes::_findSnake( int code )
 
 int MarchingCubes::_selectCapPlanes( int code )
 {
+if( code == 87 ) {
+	int x = 5;
+}
+
     // signTab - signs for all corners
     int signTab[8];
     _codeToSignTable( code, signTab );
@@ -582,41 +586,44 @@ int MarchingCubes::_selectCapPlanes( int code )
 
 			int* planeEdges = planeToEdge[plane];
 
-bool side = false;
-			int edgesOnPlane = 0;
+			bool side = false;
+			std::set<int> edgesSet;
+//			int edgesOnPlane = 0;
 			MarchingCubesCase& cubeCase = triangleTable[code];
 			// for each triangle
-			for( int tri = 0; tri < cubeCase.numTri; tri++ ) {
+			for( int tri = 0; tri < cubeCase.numTri; tri++ )
+			{
 				// check each combination: tri corner and edge on this plane
-				for( int i = 0; i < 4; i++ )
-				for( int j = 0; j < 3; j++ )
-					if( cubeCase.tris[tri].i[j] == planeEdges[i] )
-						edgesOnPlane++;
+				for( int ii = 0; ii < 4; ii++ )
+				for( int jj = 0; jj < 3; jj++ )
+					if( cubeCase.tris[tri].i[jj] == planeEdges[ii] )
+						edgesSet.insert( planeEdges[ii] );
+//						edgesOnPlane++;
 
-{
-int c = 0;
-for( int i = 0; i < 3; i++ )
-	if( cubeCase.tris[tri].i[i] == planeEdges[0] ||
-		cubeCase.tris[tri].i[i] == planeEdges[2] )
-						c++;
-			//}
-if( c > 1 )
-	side = true;
-}
-//			if( edgesOnPlane )
-//				printf( "cap plane -> case:%d plane:%d edgesOnPlane:%d\n", code, plane, edgesOnPlane );
+				int c = 0;
+				for( int iii = 0; iii < 3; iii++ )
+					if( cubeCase.tris[tri].i[iii] == planeEdges[0] ||
+						cubeCase.tris[tri].i[iii] == planeEdges[2] )
+										c++;
 
-			if( edgesOnPlane == 4 ) {
-				if( side )
-					triangleTable[code].capPlanesTab[plane] = 2;
-				else
-					triangleTable[code].capPlanesTab[plane] = 1;
+				if( c > 1 )
+					side = true;
 
-				//triangleTable[code].capPlanesTab[plane] = 2;
-				printf( "cap plane (4) -> case:%d plane:%d\n", code, plane );
+//				if( edgesOnPlane )
+//					printf( "cap plane -> case:%d plane:%d edgesOnPlane:%d\n", code, plane, edgesOnPlane );
+
+				if( edgesSet.size() == 4 ) {
+//				if( edgesOnPlane == 4 ) {
+					if( side )
+						triangleTable[code].capPlanesTab[plane] = 2;
+					else
+						triangleTable[code].capPlanesTab[plane] = 1;
+
+					//triangleTable[code].capPlanesTab[plane] = 2;
+					printf( "cap plane (4) -> case:%d plane:%d\n", code, plane );
+				}
 			}
 		}
-	}
 	}
 	for( int i = 0; i < 6; i++ ) {
 		if( triangleTable[code].capPlanesTab[i] > 0 ) {

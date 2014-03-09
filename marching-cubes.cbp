@@ -55,12 +55,14 @@
 		</Unit>
 		<Unit filename="include/MarchingCubes.h" />
 		<Unit filename="include/VoxelField.h" />
+		<Unit filename="include/simplexnoise1234.h" />
 		<Unit filename="main.cpp" />
 		<Unit filename="src/MarchingCubes.cpp" />
 		<Unit filename="src/MarchingCubesAnalyze.cpp" />
 		<Unit filename="src/MarchingCubesCache.cpp" />
 		<Unit filename="src/MarchingCubesRender.cpp" />
 		<Unit filename="src/VoxelField.cpp" />
+		<Unit filename="src/simplexnoise1234.cpp" />
 		<Extensions>
 			<code_completion />
 			<debugger />

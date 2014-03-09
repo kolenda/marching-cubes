@@ -1,5 +1,6 @@
 
 #include "VoxelField.h"
+#include "simplexnoise1234.h"
 
 VoxelField::VoxelField() {
 	field = NULL;
@@ -335,12 +336,33 @@ double VoxelField::noise( double x,double y )
 
 void VoxelField::setPerlinNoise( int num )
 {
+	float scale = 0.1f;
 	for( int xx = 0; xx < sizeX; xx++ ) {
 		for( int yy = 0; yy < sizeY; yy++ ) {
 			for( int zz = 0; zz < sizeZ; zz++ ) {
-				double val = noise( xx, yy );
+				float val = snoise3( (float)xx*scale, (float)yy*scale, (float)zz*scale );
+//				val += (1.0f/127.8f);
 				setVal( xx, yy, zz, val );
 			}
 		}
+	}
+}
+
+
+void VoxelField::setZeroSlice()
+{
+	setSize( 3, 3, 3 );
+
+	for( int x = 0; x < 3; x++ )
+	for( int y = 0; y < 3; y++ )
+	for( int z = 0; z < 3; z++ )
+	{
+		int sum = x+y+z;
+		if( sum < 3 )
+			setVal( x,y,z, -1.0f );
+		else if( sum > 3 )
+			setVal( x,y,z, 1.0f );
+		else
+			setVal( x,y,z, 0.0f );
 	}
 }

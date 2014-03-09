@@ -176,6 +176,7 @@ public:
 	void	setSnake( int num );
 	void	setSpheres( float phase );
 	void	setPerlinNoise( int num );
+	void	setZeroSlice();
 
     int getSizeX() { return sizeX; }
     int getSizeY() { return sizeY; }

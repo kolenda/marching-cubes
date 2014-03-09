@@ -1,7 +1,5 @@
 
 #define GLEW_STATIC
-// 1
-//#define FREEGLUT_STATIC
 #include <GL/glew.h>
 #include <GL/glut.h>
 
@@ -52,9 +50,12 @@ int vertexNum = 0;
 int triNum = 0;
 int activeTriangle = -1;
 
-int	GRID_SIZE_X = 20;
-int GRID_SIZE_Y = 20;
-int GRID_SIZE_Z = 20;
+int	GRID_SIZE_X = //5;	//
+					10;
+int GRID_SIZE_Y = //5;	//
+					10;
+int GRID_SIZE_Z = //5;	//
+					10;
 
 struct AxisVert {
     GLfloat pos[3];
@@ -70,9 +71,9 @@ GLfloat lightColorRedHalf[] = {0.5f, 0.0f, 0.0f, 1.0f};
 GLfloat lightColorGreenHalf[] = {0.0f, 0.5f, 0.0f, 1.0f};
 GLfloat lightColorBlueHalf[] = {0.0f, 0.0f, 0.5f, 1.0f};
 GLfloat lightColorWhiteHalf[] = {0.5f, 0.5f, 0.5f, 1.0f};
-GLfloat lightPosRed[] = {30.0f, 0.0f, 0.0f, 1.0f};
-GLfloat lightPosGreen[] = {0.0f, 30.0f, 0.0f, 1.0f};
-GLfloat lightPosBlue[] = {0.0f, 0.0f, 30.0f, 1.0f};
+GLfloat lightPosRed[] = {50.0f, 0.0f, 0.0f, 1.0f};
+GLfloat lightPosGreen[] = {0.0f, 50.0f, 0.0f, 1.0f};
+GLfloat lightPosBlue[] = {0.0f, 0.0f, 50.0f, 1.0f};
 GLfloat lightPosWhite[] = {0.0f, 0.0f, 0.0f, 1.0f};
 GLfloat materialColorSpec[] = {0.0f, 0.0f, 0.0f, 1.0f};
 
@@ -96,12 +97,11 @@ void setupLight( bool on )
         glEnable( GL_LIGHT0 );
         glEnable( GL_LIGHT1 );
         glEnable( GL_LIGHT2 );
-        glDisable(	//
-//        glEnable(
-				GL_LIGHT3 );
+//        glDisable(	//
+        glEnable( GL_LIGHT3 );
 
         glEnable( GL_NORMALIZE );
-        glShadeModel( GL_SMOOTH );	// FLAT );
+        glShadeModel( GL_SMOOTH );
     }
     else {
         glDisable( GL_LIGHTING );
@@ -146,9 +146,9 @@ int setView()
     glRotatef( sideAngle, 0.0f, 1.0f, 0.0f );
     glTranslatef( -cf.getSizeX()/2, -cf.getSizeY()/2, -cf.getSizeZ()/2 );
 
-    glEnable	//
-//    glDisable
-			( GL_CULL_FACE );
+	glEnable(
+//	glDisable(
+			GL_CULL_FACE );
     glEnable( GL_DEPTH_TEST );
 
     return 1;
@@ -183,17 +183,20 @@ void drawDebugAxes()
 		float debugPlaneLen = 1.0f;
 		glDisable( GL_CULL_FACE );
         glBegin(GL_QUADS);
-            glColor3f( 1.0f, 1.0f, 1.0f );
+            glColor3f( 1.0f, 0.0f, 0.0f );
+//            glColor3f( 1.0f, 1.0f, 1.0f );
             glVertex3f( x, y, z );
             glVertex3f( x+debugPlaneLen, y, z );
             glVertex3f( x+debugPlaneLen, y+debugPlaneLen, z );
             glVertex3f( x, y+debugPlaneLen, z );
 
+            glColor3f( 0.0f, 1.0f, 0.0f );
             glVertex3f( x, y, z );
             glVertex3f( x, y+debugPlaneLen, z );
             glVertex3f( x, y+debugPlaneLen, z+debugPlaneLen );
             glVertex3f( x, y, z+debugPlaneLen );
 
+            glColor3f( 0.0f, 0.0f, 1.0f );
             glVertex3f( x, y, z );
             glVertex3f( x+debugPlaneLen, y, z );
             glVertex3f( x+debugPlaneLen, y, z+debugPlaneLen );
@@ -201,8 +204,13 @@ void drawDebugAxes()
 		glEnd();
 //        setupLight( false );	//lighting );
         glColor3f( 1.0f, 1.0f, 1.0f );
+
+glEnable(GL_POLYGON_OFFSET_FILL);
+glPolygonOffset(-1,-1);
 		drawTrianglesIndexedWireframe( verts, trisI, triNum );
 		drawTrianglesIndexedNormals( verts, trisI, triNum );
+glEnable(GL_POLYGON_OFFSET_FILL);
+glPolygonOffset(1,1);
 	}
 }
 
@@ -296,8 +304,6 @@ void updateGeometry()
 	}
 
 	int triangleNum = march.fillInTrianglesIndexed( verts, MAX_TRIS, trisI, MAX_TRIS, vertexNum, triNum );
-    int x = 5;
-		//fillTrianglesIndexedVBO( verts, vertexNum, trisI, triNum );
 }
 
 void drawTrianglesIndexed( MarchingCubes::Vertex* verts, MarchingCubes::TriangleI* trisI, int triNum )
@@ -375,28 +381,10 @@ void generateAxesVBO() {
     { 0.0f, 0.0f, 0.0f, 255, 255, 255 },
     { 0.0f, 0.0f, axExt, 0, 0, 255 },
     };
-//    int     indices[] = { 0, 1, 0, 2, 0, 3 };
 
     glGenBuffersARB( 1, &axesVertexBuffer );
     glBindBuffer( GL_ARRAY_BUFFER, axesVertexBuffer );
     glBufferData( GL_ARRAY_BUFFER, sizeof(verts), verts, GL_DYNAMIC_DRAW);  //STATIC_DRAW);
-
-/*    AxisVert    verts[6] = {
-    { 0.0f, 0.0f, 0.0f, 255, 255, 255 },
-    { axExt, 0.0f, 0.0f, 255, 0, 0 },
-    { 0.0f, axExt, 0.0f, 0, 255, 0 },
-    { 0.0f, 0.0f, axExt, 0, 0, 255 },
-    };
-    int     indices[] = { 0, 1, 0, 2, 0, 3 };
-
-    glGenBuffers( 1, &axesVertexBuffer );
-    glBindBuffer( GL_ARRAY_BUFFER, axesVertexBuffer);
-    glBufferData( GL_ARRAY_BUFFER, sizeof(verts), verts, GL_DYNAMIC_DRAW);  //STATIC_DRAW);
-
-    glGenBuffers( 1, &axesIndexBuffer );
-    glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, axesIndexBuffer);
-    glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_DYNAMIC_DRAW);  //STATIC_DRAW);
-*/
 }
 
 void deleteAxesVBO() {
@@ -404,12 +392,8 @@ void deleteAxesVBO() {
     glDeleteBuffers(1, &axesIndexBuffer);
 }
 
-
 void drawAxesVBO()
 {
-//    GLfloat pos[3];
-//    GLubyte color[3];
-
     glBindBuffer( GL_ARRAY_BUFFER, axesVertexBuffer );
 
     glEnableClientState(GL_VERTEX_ARRAY);
@@ -438,11 +422,6 @@ void drawAxesVBO()
     glDisableClientState(GL_COLOR_ARRAY);
 */
 }
-
-
-
-
-
 
 
 void drawAxes()
@@ -519,7 +498,8 @@ void drawEdges( float x, float y, float z, MarchingCubes::TriangleF* tris, int t
 
 int updateVoxelField( float phase )
 {
-	cf.setSpheres( phase );
+	cf.setPerlinNoise(0);
+//	cf.setSpheres( phase );
 	return 1;
 }
 
@@ -601,10 +581,6 @@ void iterate()
 			if( triNum )
 			{
 				drawTris( x, y, z, tris, triNum );
-
-/*				if( drawEdgesBool ) {
-					drawEdges( x, y, z, tris, triNum );
-				}*/
 			} //if triNum
 		}
 	}
@@ -622,6 +598,8 @@ void drawFrame()
 	setupLight( lighting );
 
 	drawTrianglesIndexed( verts, trisI, triNum );
+
+
 //	iterate();
 	setupLight( false );
 	drawAxes();
@@ -738,13 +716,14 @@ printf("OpenGL version supported by this platform (%s): \n", glGetString(GL_VERS
 	march.init();
 	cf.setSize( GRID_SIZE_X, GRID_SIZE_Y, GRID_SIZE_Z );
 
-    /* program main loop */
-    while (!bQuit)
-    {
-        /* check for messages */
+//	cf.setAmbiguousCase( 5 );
+	cf.setPerlinNoise( 0 );
+//	cf.setZeroSlice();
+
+	while (!bQuit)
+	{
         if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
         {
-            /* handle or dispatch messages */
             if (msg.message == WM_QUIT)
             {
                 bQuit = TRUE;
@@ -757,14 +736,12 @@ printf("OpenGL version supported by this platform (%s): \n", glGetString(GL_VERS
         }
         else
         {
-			if( anim ) {
-				phase += 0.05;
-			}
-//							phase = //59.35;		//									23.85f;	//20,20,20
-			updateVoxelField( phase );
-//			cf.setPerlinNoise( 0 );
-//cf.setAmbiguousCase( 5 );
-//cf.setSnake( 0 );
+//			if( anim ) {
+//				phase += 0.05;
+//			}
+
+//							phase = //59.35;	//		23.85f;	//20,20,20
+//			updateVoxelField( phase );
 
             if( anim || geomNeedsUpdate ) {
                 geomNeedsUpdate = false;
@@ -773,7 +750,6 @@ printf("OpenGL version supported by this platform (%s): \n", glGetString(GL_VERS
 
 			drawFrame();
 			SwapBuffers(hDC);
-//            draw();
         }
     }
 //    deleteAxesVBO();
@@ -884,7 +860,6 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         default:
             return DefWindowProc(hwnd, uMsg, wParam, lParam);
     }
-
     return 0;
 }
 
