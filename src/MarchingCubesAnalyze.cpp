@@ -85,7 +85,9 @@ int MarchingCubes::generateTriangles()
         if( triangleTable[i].index < 1 )
 		{
             triangleTable[i].index = i;
-
+if( i == 49 ) {
+	int x = 5;
+}
             int tris = 0;
             tris += _findSingleVertexTriangles( i );
             tris += _findEdgeTriangles( i );

@@ -34,9 +34,9 @@ int MarchingCubes::_cacheVertex( MarchingCubes::Vertex* vert, int x, int y, int 
 		res = currVert++;
 	}
 
-					if( res == 148 ) {
-						int x = 5;
-					}
+//					if( res == 148 ) {
+//						int x = 5;
+//					}
 	return res;
 /*    int index = _cacheOffsetFromCubeEdge( x, y, z, e );
     if( cacheField[index] < 0 ) {

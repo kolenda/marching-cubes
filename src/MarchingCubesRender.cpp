@@ -73,13 +73,21 @@ int MarchingCubes::fillInTrianglesIndexed( MarchingCubes::Vertex* vert, int maxV
 		cube.setGridSize( field.getSizeX(), field.getSizeY(), field.getSizeZ() );
 
         if( cube.notEmpty() ) {
-            if( currTriangle < maxTris - 25 ) {
+            if( currTriangle < maxTris - 10 ) {
                 TriangleF     tmpTris[25];
                 setValues( cube );
 
                 MarchingCubesCase &cubeCase = getCaseFromValues();
 						usageStats[cubeCase.index]++;
 
+if(
+//	cubeCase.index != 48 &&
+	cubeCase.index != 49
+//	&& cubeCase.index != 115
+	) {
+	int x = 5;
+//	continue;
+}
                 int triNum = 0;
                 // for each triangle
                 for( ; triNum < cubeCase.numTri; triNum++ ) {
@@ -122,11 +130,10 @@ int MarchingCubes::fillInTrianglesIndexed( MarchingCubes::Vertex* vert, int maxV
                     currTriangle++;
                 }
 
-				if( cubeCase.capPlanes ) {
+				/*if( cubeCase.capPlanes ) {
 					for( int plane = 0; plane < 6; plane++ ) {
 						int p = cubeCase.capPlanesTab[plane];
 						if( p ) {
-
 							int offset = _cacheOffsetFromPlane( x, y, z, plane );
 							if( capPlaneCache.find(offset) != capPlaneCache.end() ) {
 								int p2 = capPlaneCache.find(offset)->second;
@@ -145,17 +152,18 @@ int MarchingCubes::fillInTrianglesIndexed( MarchingCubes::Vertex* vert, int maxV
 							}
 						}
 					}
-				}
+				}*/
 			}	// cur tri
 		}
     }	//	for
 
 	int	lenVector[10] = {0};
 
-    for( int v = 0; v < currVert; v++ ) {
-			if( v == 148 ) {
-                int x = 5;
-			}
+    for( int v = 0; v < currVert; v++ )
+	{
+//			if( v == 148 ) {
+//                int x = 5;
+//			}
             if( vert[v].norm.length() < 0.5 ) {
                 int x = 5;
             }
@@ -180,10 +188,9 @@ int MarchingCubes::_capPlane( MarchingCubes::Vertex* vert, MarchingCubes::Triang
 	int* edges = planeToEdge[plane];
 
 	// TODO: just dirty hack for now
-	if( plane == 2 || plane == 3 )
-		;
-	else
-		side = 1 - side;
+//	if( plane == 2 || plane == 3 )	;
+//	else							side = 1 - side;
+
 
 	int index[4];	// = {-1};
 	for( int i = 0; i < 4; i++ )

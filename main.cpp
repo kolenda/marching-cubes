@@ -40,6 +40,8 @@ float sideAngle =   -45.0f;
 float upAngle =   45.0f;
 float zoomOut   = 40.0f;
 
+bool shiftBtn = false;
+
 int currentAxis = 0;
 int debugAxes[3] = {0,0,0};
 
@@ -50,12 +52,9 @@ int vertexNum = 0;
 int triNum = 0;
 int activeTriangle = -1;
 
-int	GRID_SIZE_X = //5;	//
-					10;
-int GRID_SIZE_Y = //5;	//
-					10;
-int GRID_SIZE_Z = //5;	//
-					10;
+int	GRID_SIZE_X = 20;
+int GRID_SIZE_Y = 20;
+int GRID_SIZE_Z = 20;
 
 struct AxisVert {
     GLfloat pos[3];
@@ -146,8 +145,8 @@ int setView()
     glRotatef( sideAngle, 0.0f, 1.0f, 0.0f );
     glTranslatef( -cf.getSizeX()/2, -cf.getSizeY()/2, -cf.getSizeZ()/2 );
 
-	glEnable(
-//	glDisable(
+//	glEnable(
+	glDisable(
 			GL_CULL_FACE );
     glEnable( GL_DEPTH_TEST );
 
@@ -777,10 +776,25 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         case WM_DESTROY:
             return 0;
 
+        case WM_KEYUP:
+		{
+            switch (wParam)
+            {
+				case VK_SHIFT:
+					shiftBtn = false;
+				break;
+            }
+            break;
+		}
+
         case WM_KEYDOWN:
         {
             switch (wParam)
             {
+                case VK_SHIFT:
+                    shiftBtn = true;
+                break;
+
                 case VK_ESCAPE:
                     PostQuitMessage(0);
                 break;
@@ -847,12 +861,21 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 break;
 
                 case VK_OEM_PLUS:
-                	activeTriangle++;
-                break;
+				{
+                	if( shiftBtn )
+						activeTriangle += 100;
+                	else
+						activeTriangle++;
+					break;
+				}
                 case VK_OEM_MINUS:
-                	if( activeTriangle >= 0 )
+				{
+					if( shiftBtn && activeTriangle >= 100 )
+						activeTriangle -= 100;
+                	else if( activeTriangle >= 0 )
 						activeTriangle--;
-                break;
+					break;
+				}
             }
         }
         break;
