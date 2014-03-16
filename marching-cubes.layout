@@ -1,39 +1,29 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_layout_file>
 	<ActiveTarget name="Debug" />
-	<File name="src\MarchingCubes.cpp" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="src\VoxelField.cpp" open="1" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="0" topLine="0" />
+			<Cursor1 position="7924" topLine="318" />
 		</Cursor>
 	</File>
 	<File name="include\MarchingCubes.h" open="1" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="2569" topLine="78" />
+			<Cursor1 position="2569" topLine="63" />
 		</Cursor>
 	</File>
-	<File name="src\MarchingCubesRender.cpp" open="1" top="1" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="src\MarchingCubesRender.cpp" open="1" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="4211" topLine="124" />
+			<Cursor1 position="4519" topLine="112" />
+		</Cursor>
+	</File>
+	<File name="main.cpp" open="1" top="1" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1013" topLine="40" />
 		</Cursor>
 	</File>
 	<File name="include\VoxelField.h" open="1" top="0" tabpos="8" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="4097" topLine="155" />
-		</Cursor>
-	</File>
-	<File name="glew\glew.c" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="8986" topLine="284" />
-		</Cursor>
-	</File>
-	<File name="src\MarchingCubesCache.cpp" open="1" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="581" topLine="14" />
-		</Cursor>
-	</File>
-	<File name="include\simplexnoise1234.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="1896" topLine="24" />
+			<Cursor1 position="4097" topLine="153" />
 		</Cursor>
 	</File>
 	<File name="src\simplexnoise1234.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -41,22 +31,29 @@
 			<Cursor1 position="14847" topLine="336" />
 		</Cursor>
 	</File>
-	<File name="main.cpp" open="1" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="src\MarchingCubesCache.cpp" open="1" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="1210" topLine="50" />
+			<Cursor1 position="982" topLine="13" />
 		</Cursor>
 	</File>
-	<File name="src\VoxelField.cpp" open="1" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="include\simplexnoise1234.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="8531" topLine="310" />
+			<Cursor1 position="1896" topLine="24" />
 		</Cursor>
-		<Folding>
-			<Collapse line="283" />
-		</Folding>
 	</File>
 	<File name="src\MarchingCubesAnalyze.cpp" open="1" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="20695" topLine="562" />
+			<Cursor1 position="2559" topLine="82" />
+		</Cursor>
+	</File>
+	<File name="glew\glew.c" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="8986" topLine="284" />
+		</Cursor>
+	</File>
+	<File name="src\MarchingCubes.cpp" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="0" topLine="0" />
 		</Cursor>
 	</File>
 </CodeBlocks_layout_file>

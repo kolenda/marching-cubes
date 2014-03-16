@@ -45,7 +45,7 @@ bool shiftBtn = false;
 int currentAxis = 0;
 int debugAxes[3] = {0,0,0};
 
-const int MAX_TRIS    = 10000;
+const int MAX_TRIS    = 16000;
 MarchingCubes::Vertex       verts[MAX_TRIS];
 MarchingCubes::TriangleI    trisI[MAX_TRIS];
 int vertexNum = 0;
