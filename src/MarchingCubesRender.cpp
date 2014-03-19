@@ -68,11 +68,18 @@ int MarchingCubes::fillInTrianglesIndexed( MarchingCubes::Vertex* vert, int maxV
     	if( x == 3 && y == 6 && z == 6 ) {
 			int x = 5;
     	}
+				int borderDebug = 0;
+				if( x < (17-borderDebug) || x > (17+borderDebug) ||
+					y < (16-borderDebug) || y > (16+borderDebug) ||
+					z < (6-borderDebug) || z > (6+borderDebug)
+					)
+						;//continue;
 
         Cube2 cube = field.getCube( x, y, z );
 		cube.setGridSize( field.getSizeX(), field.getSizeY(), field.getSizeZ() );
 
-        if( cube.notEmpty() ) {
+//        if( cube.notEmpty() )
+		{
             if( currTriangle < maxTris - 10 ) {
                 TriangleF     tmpTris[25];
                 setValues( cube );
@@ -130,7 +137,8 @@ if(
                     currTriangle++;
                 }
 
-				/*if( cubeCase.capPlanes ) {
+				//*
+				if( cubeCase.capPlanes ) {
 					for( int plane = 0; plane < 6; plane++ ) {
 						int p = cubeCase.capPlanesTab[plane];
 						if( p ) {
@@ -152,7 +160,7 @@ if(
 							}
 						}
 					}
-				}*/
+				}//*/
 			}	// cur tri
 		}
     }	//	for

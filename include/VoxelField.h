@@ -74,34 +74,33 @@ public:
     bool notEmpty()
     {
     	float v0 = vec[0];
-    	float v1 = vec[1];
-		if( v0 * v1 < 0.0f )
+
+    	float v001 = vec[1];
+		if( v0 * v001 < 0.0f )
 			return true;
 
-    	float v10 = vec[sizeX];
-		if( v0 * v10 < 0.0f )
-			return true;
-
-    	float v11 = vec[sizeX+1];
-		if( v0 * v11 < 0.0f )
+    	float v010 = vec[sizeX];
+		if( v0 * v010 < 0.0f )
 			return true;
 
     	float v100 = vec[sizeX*sizeY];
 		if( v0 * v100 < 0.0f )
 			return true;
 
+
+    	float v111 = vec[sizeX*sizeY+sizeX+1];
+
+    	float v011 = vec[sizeX+1];
+		if( v111 * v011 < 0.0f )
+			return true;
+
     	float v101 = vec[sizeX*sizeY+1];
-		if( v0 * v101 < 0.0f )
+		if( v111 * v101 < 0.0f )
 			return true;
 
     	float v110 = vec[sizeX*sizeY+sizeX];
-		if( v0 * v110 < 0.0f )
+		if( v111 * v110 < 0.0f )
 			return true;
-
-    	float v111 = vec[sizeX*sizeY+sizeX+1];
-		if( v0 * v111 < 0.0f )
-			return true;
-
 
 /*    	for( int i = 1; i < 8; i++ ) {
     		int offset = 0;
