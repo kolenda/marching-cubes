@@ -145,8 +145,8 @@ int setView()
     glRotatef( sideAngle, 0.0f, 1.0f, 0.0f );
     glTranslatef( -cf.getSizeX()/2, -cf.getSizeY()/2, -cf.getSizeZ()/2 );
 
-//	glEnable(
-	glDisable(
+	glEnable(
+//	glDisable(
 			GL_CULL_FACE );
     glEnable( GL_DEPTH_TEST );
 
@@ -497,8 +497,8 @@ void drawEdges( float x, float y, float z, MarchingCubes::TriangleF* tris, int t
 
 int updateVoxelField( float phase )
 {
-	cf.setPerlinNoise(0);
-//	cf.setSpheres( phase );
+//	cf.setPerlinNoise(0);
+	cf.setSpheres( phase );
 	return 1;
 }
 
@@ -735,12 +735,13 @@ printf("OpenGL version supported by this platform (%s): \n", glGetString(GL_VERS
         }
         else
         {
-//			if( anim ) {
-//				phase += 0.05;
-//			}
+			if( anim ) {
+;//				phase += 0.05;
+			}
 
-//							phase = //59.35;	//		23.85f;	//20,20,20
-//			updateVoxelField( phase );
+							phase = //59.35;	//
+									23.85f;	//20,20,20
+			updateVoxelField( phase );
 
             if( anim || geomNeedsUpdate ) {
                 geomNeedsUpdate = false;

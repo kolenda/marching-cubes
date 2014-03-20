@@ -169,9 +169,6 @@ if(
 
     for( int v = 0; v < currVert; v++ )
 	{
-//			if( v == 148 ) {
-//                int x = 5;
-//			}
             if( vert[v].norm.length() < 0.5 ) {
                 int x = 5;
             }
@@ -246,7 +243,7 @@ normal2.normalise();
 	vert[ index[2] ].norm += normal2;
 	vert[ index[3] ].norm += normal2;
 
-
+// TODO: sprawdzic te ify
 	if( side == 0 ) {
 		tris[currTriangle].i[0] = index[0];
 		tris[currTriangle].i[1] = index[2];
@@ -269,4 +266,34 @@ normal2.normalise();
 		tris[currTriangle].i[2] = index[2];
 		currTriangle++;
 	}
+}
+
+
+// param: edge index
+// returns: vertex along edge, computed with current voxel field state
+MarchingCubes::Vector3F MarchingCubes::getVertexFromEdge( int edgeNum )
+{
+	// get two vertex indices
+    int v1 = edgeToVertex[edgeNum][0];
+    int v2 = edgeToVertex[edgeNum][1];
+
+	// get current values for two vertices
+    float vf1 = vertex[v1];
+    float vf2 = vertex[v2];
+
+    Vector3F result;
+
+    float v1x = vertexOffset[v1].f[0];
+    float v1y = vertexOffset[v1].f[1];
+    float v1z = vertexOffset[v1].f[2];
+    float v2x = vertexOffset[v2].f[0];
+    float v2y = vertexOffset[v2].f[1];
+    float v2z = vertexOffset[v2].f[2];
+
+    float perc = vf1/(vf1-vf2);
+    result.f[0] = v1x + (v2x-v1x) * perc;
+    result.f[1] = v1y + (v2y-v1y) * perc;
+    result.f[2] = v1z + (v2z-v1z) * perc;
+
+    return result;
 }

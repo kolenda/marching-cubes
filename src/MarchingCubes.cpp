@@ -179,39 +179,7 @@ void MarchingCubes::printTable()
     printf( "case count:%d\n", rowCount );
 }
 
-void MarchingCubes::_getEdgesAlongAxis( int axis, int edges[4] )
-{
-    int counter = 0;
-    for( int edge = 0; edge < 12; edge++ ) {
 
-					bool b10 = _vertexIsAtAxisSide( edgeToVertex[edge][0], axis, false );
-					bool b11 = _vertexIsAtAxisSide( edgeToVertex[edge][0], axis, true );
-					bool b2 = _vertexIsNegByAxis( edgeToVertex[edge][0], axis );
-					if( b10 != b2 ) {
-						int x = 5;
-					}
-        if( _vertexIsNegByAxis(edgeToVertex[edge][0],axis) !=
-            _vertexIsNegByAxis(edgeToVertex[edge][1],axis) )
-            edges[counter++] = edge;
-    }
-}
-
-int MarchingCubes::_getVertexBySymmetry( int vertex, int axis )
-{
-    int res = vertex ^ (1<<axis);		// (^) XOR operation
-    return res;
-}
-
-int MarchingCubes::_getEdgeBySymmetry( int edge, int axis )
-{
-    int v1 = edgeToVertex[edge][0];
-    int v2 = edgeToVertex[edge][1];
-    int v1Reflected = _getVertexBySymmetry( v1, axis );
-    int v2Reflected = _getVertexBySymmetry( v2, axis );
-
-	int res = _findEdge( v1Reflected, v2Reflected );
-	return res;
-}
 
 void MarchingCubes::setValues( Cube2& cube )	//float vert[8] )
 {
@@ -250,35 +218,6 @@ MarchingCubes::Vector3F MarchingCubes::getHalfEdge( int edgeNum )
     return result;
 }
 
-// param: edge index
-// returns: vertex along edge, computed with current voxel field state
-MarchingCubes::Vector3F MarchingCubes::getVertexFromEdge( int edgeNum )
-{
-	// get two vertex indices
-    int v1 = edgeToVertex[edgeNum][0];
-    int v2 = edgeToVertex[edgeNum][1];
-
-	// get current values for two vertices
-    float vf1 = vertex[v1];
-    float vf2 = vertex[v2];
-
-    Vector3F result;
-
-    float v1x = vertexOffset[v1].f[0];
-    float v1y = vertexOffset[v1].f[1];
-    float v1z = vertexOffset[v1].f[2];
-    float v2x = vertexOffset[v2].f[0];
-    float v2y = vertexOffset[v2].f[1];
-    float v2z = vertexOffset[v2].f[2];
-
-    float perc = vf1/(vf1-vf2);
-    result.f[0] = v1x + (v2x-v1x) * perc;
-    result.f[1] = v1y + (v2y-v1y) * perc;
-    result.f[2] = v1z + (v2z-v1z) * perc;
-
-    return result;
-}
-
 
 int MarchingCubes::_getEdgeAxis( int edge )
 {
@@ -295,57 +234,3 @@ int MarchingCubes::_getEdgeAxis( int edge )
         return 2;
     return -1;
 }
-
-
-MarchingCubes::Vector3F MarchingCubes::_getNormalFromBits( int bits )
-{
-    MarchingCubes::Vector3F res;
-
-    for( int i = 0; i < 3; i++ )
-    {
-        if( bits&(1<<i) )
-            res.f[i] = 1.0f;
-        else
-            res.f[i] = -1.0f;
-    }
-    return res;
-}
-
-
-void MarchingCubes::_getPlaneEdges( int v1, int v2, int edges[4] )
-{
-    int eCounter = 0;
-
-    for( int i = 0; i < 8; i++ )
-        if( _oneBitDiff(i,v1) && _oneBitDiff(i,v2) )
-        {
-            int e1 = _findEdge(i,v1);
-            int e2 = _findEdge(i,v2);
-            edges[eCounter++] = e1;
-            edges[eCounter++] = e2;
-        }
-
-    assert( eCounter == 4 );
-}
-/*void MarchingCubes::_getPlaneEdges( int plane, int edges[4] )
-{
-    int eCounter = 0;
-
-    for( int e = 0; e < 12; e++ ) {
-
-		int v1 = edgeToVertex[e][0];
-		int v2 = edgeToVertex[e][1];
-
-//		if( _vertexIsAtAxisSide(v,))
-    }
-        if( _oneBitDiff(i,v1) && _oneBitDiff(i,v2) )
-        {
-            int e1 = _findEdge(i,v1);
-            int e2 = _findEdge(i,v2);
-            edges[eCounter++] = e1;
-            edges[eCounter++] = e2;
-        }
-
-    assert( eCounter == 4 );
-}*/
-
