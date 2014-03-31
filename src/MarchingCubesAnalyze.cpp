@@ -657,10 +657,6 @@ int MarchingCubes::_findSnake( int code )
 
 int MarchingCubes::_selectCapPlanes( int code )
 {
-if( code == 87 ) {
-	int x = 5;
-}
-
     // signTab - signs for all corners
     int signTab[8];
     _codeToSignTable( code, signTab );
@@ -676,7 +672,6 @@ if( code == 87 ) {
 
 			bool side = false;
 			std::set<int> edgesSet;
-//			int edgesOnPlane = 0;
 			MarchingCubesCase& cubeCase = triangleTable[code];
 			// for each triangle
 			for( int tri = 0; tri < cubeCase.numTri; tri++ )
@@ -686,7 +681,6 @@ if( code == 87 ) {
 				for( int jj = 0; jj < 3; jj++ )
 					if( cubeCase.tris[tri].i[jj] == planeEdges[ii] )
 						edgesSet.insert( planeEdges[ii] );
-//						edgesOnPlane++;
 
 				int c = 0;
 				for( int iii = 0; iii < 3; iii++ )
@@ -697,17 +691,15 @@ if( code == 87 ) {
 				if( c > 1 )
 					side = true;
 
-//				if( edgesOnPlane )
-//					printf( "cap plane -> case:%d plane:%d edgesOnPlane:%d\n", code, plane, edgesOnPlane );
+				if( edgesSet.size() == 4 )
+				{
+					int triOffset = tri * CAP_TRI_OFFSET;
 
-				if( edgesSet.size() == 4 ) {
-//				if( edgesOnPlane == 4 ) {
 					if( side )
-						triangleTable[code].capPlanesTab[plane] = 2;
+						triangleTable[code].capPlanesTab[plane] = 2 + CAP_TRI_OFFSET;
 					else
-						triangleTable[code].capPlanesTab[plane] = 1;
+						triangleTable[code].capPlanesTab[plane] = 1 + CAP_TRI_OFFSET;
 
-					//triangleTable[code].capPlanesTab[plane] = 2;
 					printf( "cap plane (4) -> case:%d plane:%d\n", code, plane );
 				}
 			}

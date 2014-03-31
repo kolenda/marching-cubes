@@ -33,6 +33,8 @@
 #include "VoxelField.h"
 #include <math.h>
 
+#define CAP_TRI_OFFSET 16
+
 class MarchingCubes
 {
 	int sizeX;

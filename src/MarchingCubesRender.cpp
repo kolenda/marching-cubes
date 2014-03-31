@@ -65,15 +65,10 @@ int MarchingCubes::fillInTrianglesIndexed( MarchingCubes::Vertex* vert, int maxV
     for( int y = 0; y < field.getSizeY()-1; y++ )
     for( int z = 0; z < field.getSizeZ()-1; z++ )
     {
-    	if( x == 3 && y == 6 && z == 6 ) {
-			int x = 5;
-    	}
 				int borderDebug = 0;
 				if( x < (17-borderDebug) || x > (17+borderDebug) ||
 					y < (16-borderDebug) || y > (16+borderDebug) ||
-					z < (6-borderDebug) || z > (6+borderDebug)
-					)
-						;//continue;
+					z < (6-borderDebug) || z > (6+borderDebug)		)		;//continue;
 
         Cube2 cube = field.getCube( x, y, z );
 		cube.setGridSize( field.getSizeX(), field.getSizeY(), field.getSizeZ() );
@@ -81,18 +76,15 @@ int MarchingCubes::fillInTrianglesIndexed( MarchingCubes::Vertex* vert, int maxV
 //        if( cube.notEmpty() )
 		{
             if( currTriangle < maxTris - 10 ) {
-                TriangleF     tmpTris[25];
+                TriangleF     tmpTris[10];
                 setValues( cube );
 
                 MarchingCubesCase &cubeCase = getCaseFromValues();
 						usageStats[cubeCase.index]++;
 
-if(
-//	cubeCase.index != 48 &&
-	cubeCase.index != 49
-//	&& cubeCase.index != 115
-	) {
-	int x = 5;
+if(//	cubeCase.index != 48 &&
+		cubeCase.index != 49//	&& cubeCase.index != 115
+	) {	int x = 5;
 //	continue;
 }
                 int triNum = 0;
@@ -141,6 +133,10 @@ if(
 				if( cubeCase.capPlanes ) {
 					for( int plane = 0; plane < 6; plane++ ) {
 						int p = cubeCase.capPlanesTab[plane];
+
+						int _tri = p / CAP_TRI_OFFSET;
+						p = p % CAP_TRI_OFFSET;
+
 						if( p ) {
 							int offset = _cacheOffsetFromPlane( x, y, z, plane );
 							if( capPlaneCache.find(offset) != capPlaneCache.end() ) {
