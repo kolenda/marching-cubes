@@ -10,17 +10,61 @@
 #include <string.h>
 #include "MarchingCubes.h"
 
-int _findCommonAxis( int v1, int v2 )
+//
+//	Bit tools
+//
+
+bool MarchingCubes::_oneBitDiff( int v1, int v2 )
 {
-    if( v1&1 == v2&1 )
-        return 0;
-    if( v1&2 == v2&2 )
-        return 1;
-    if( v1&4 == v2&4 )
-        return 2;
+    int diff = v1 ^ v2;    //  XOR
+    if( diff == 1 || diff == 2 || diff == 4 )
+        return true;
+    return false;
+}
+bool MarchingCubes::_twoBitsDiff( int v1, int v2 )
+{
+    int diff = v1 ^ v2;    //  XOR
+    if( diff == 3 || diff == 5 || diff == 6 )
+        return true;
+    return false;
+}
+
+bool MarchingCubes::_vertexIsNegByAxis( int v, int axis )
+{
+    if( v & (1<<axis) )
+        return false;
+    return true;
+}
+bool MarchingCubes::_vertexIsAtAxisSide( int v, int axis, int sign )
+{
+	bool res = false;
+
+	if( sign )
+		res = v & (1<<axis);
+	else
+		res = !(v & (1<<axis));
+		//return
+	return res;
+}
+
+
+int MarchingCubes::_findEdge( int v1, int v2 )
+{
+    for( int edge = 0; edge < 12; edge++ ) {
+        if( v1 == edgeToVertex[edge][0] &&
+            v2 == edgeToVertex[edge][1] )
+           return edge;
+        if( v2 == edgeToVertex[edge][0] &&
+            v1 == edgeToVertex[edge][1] )
+           return edge;
+    }
     return -1;
 }
 
+
+//
+//	Fill basic geometry data
+//
 
 void MarchingCubes::_fillVertices()
 {
@@ -44,13 +88,20 @@ void MarchingCubes::_fillEdges()
     }
 }
 
+int _planeFromAxisSign( int axis, int sign )
+{
+	int plane = axis * 2 + sign;
+	return plane;
+}
+
 void MarchingCubes::_fillPlanes()
 {
 	for( int axis = 0; axis < 3; axis++ )
 	{
 		for( int sign = 0; sign < 2; sign++ )
 		{
-			int plane = axis * 2 + sign;
+			int plane = _planeFromAxisSign( axis, sign );
+
 			int edgeCounter = 0;
 			int vertexCounter = 0;
 
@@ -67,11 +118,32 @@ void MarchingCubes::_fillPlanes()
 			for( int vert = 0; vert < 8; vert++ ) {
 				if( _vertexIsAtAxisSide( vert, axis, sign ) )
 					planeToVertex[plane][vertexCounter++] = vert;
-
 			}
 			assert( vertexCounter == 4 );
 		}
 	}
+}
+
+
+MarchingCubes::Vector3F MarchingCubes::getHalfEdge( int edgeNum )
+{
+    int v1 = edgeToVertex[edgeNum][0];
+    int v2 = edgeToVertex[edgeNum][1];
+
+    Vector3F result;
+
+    float v1x = vertexOffset[v1].f[0];
+    float v1y = vertexOffset[v1].f[1];
+    float v1z = vertexOffset[v1].f[2];
+    float v2x = vertexOffset[v2].f[0];
+    float v2y = vertexOffset[v2].f[1];
+    float v2z = vertexOffset[v2].f[2];
+
+    result.f[0] = (v1x+v2x) / 2;
+    result.f[1] = (v1y+v2y) / 2;
+    result.f[2] = (v1z+v2z) / 2;
+
+    return result;
 }
 
 
@@ -257,18 +329,6 @@ int MarchingCubes::_findSingleVertexTriangles( int code )
 				}
 			}
 		}//*/
-    }
-    // ambigious case
-    for( int i = 0; i < 7; i++ )
-    for( int j = i+1; j < 8; j++ )
-    {
-//        if( singleVertexMap[i] && singleVertexMap[j] ) {
-            if( _twoBitsDiff(i,j) ) {
-                int axis = _findCommonAxis(i,j);
-
-;//				_capSingleVertexPlane( triangleTable[code], i, j );
-            }
-//        }
     }
     return counter;
 }
@@ -654,6 +714,12 @@ int MarchingCubes::_findSnake( int code )
     return counter;
 }
 
+float getComponentByIndex( MarchingCubes::Vector3F vec, int index )
+{
+//	if( index >= 0 && index < 3 )
+		return vec.f[index];
+//	return 0;
+}
 
 int MarchingCubes::_selectCapPlanes( int code )
 {
@@ -665,7 +731,8 @@ int MarchingCubes::_selectCapPlanes( int code )
 	{
 		for( int sign = 0; sign < 2; sign++ )
 		{
-			int plane = axis * 2 + sign;
+			int plane = _planeFromAxisSign( axis, sign );
+
 			triangleTable[code].capPlanesTab[plane] = 0;
 
 			int* planeEdges = planeToEdge[plane];
@@ -673,9 +740,71 @@ int MarchingCubes::_selectCapPlanes( int code )
 			bool side = false;
 			std::set<int> edgesSet;
 			MarchingCubesCase& cubeCase = triangleTable[code];
+
+			int triangleOnPlaneCount = 0;
 			// for each triangle
 			for( int tri = 0; tri < cubeCase.numTri; tri++ )
 			{
+				TriangleI& triI = cubeCase.tris[tri];
+
+				int planeVertCount = 0;
+				for( int triVert = 0; triVert < 3; triVert++ ) {
+					for( int edgeIdx = 0; edgeIdx < 4; edgeIdx++ ) {
+						if( triI.i[triVert] == planeEdges[edgeIdx] )
+							planeVertCount++;
+					}
+				}
+
+				// THIS TRIANGLE
+				if( planeVertCount == 2 ) {
+					triangleOnPlaneCount++;
+				}
+				if( triangleOnPlaneCount == 2 ) {
+					Vector3F verts[3];
+					for( int v = 0; v < 3; v++ )
+						verts[v] = getHalfEdge( triI.i[v] );
+
+					Vector3F  delta1 = verts[1] - verts[0];
+					Vector3F  delta2 = verts[2] - verts[0];
+
+					Vector3F  normal;
+					getCrossProduct( delta1.f, delta2.f, normal.f );
+
+					float val = getComponentByIndex( normal, axis );
+
+					int planeSign = 0;
+					if( (val * ((float)sign - 0.5f)) > 0.0f )
+						planeSign = 1;
+					else if( (val * ((float)sign - 0.5f)) < 0.0f )
+						planeSign = -1;
+					else {
+						Vector3F cubeCenter(0.5f,0.5f,0.5f);
+						Vector3F triCenter = verts[0] + verts[1] + verts[2];
+						triCenter.f[0] /= 3.0f;
+						triCenter.f[1] /= 3.0f;
+						triCenter.f[2] /= 3.0f;
+
+						Vector3F triToCenter = cubeCenter - triCenter;
+
+						float dot = dotProduct( normal, triToCenter );
+						if( dot > 0 )
+							planeSign = 1;
+						else if( dot < 0 )
+							planeSign = -1;
+						else
+							throw "sdfsd";
+					}
+
+					triangleTable[code].capPlanesTab[plane] = planeSign;
+
+					break;
+				}
+
+
+
+
+
+/*
 				// check each combination: tri corner and edge on this plane
 				for( int ii = 0; ii < 4; ii++ )
 				for( int jj = 0; jj < 3; jj++ )
@@ -701,12 +830,12 @@ int MarchingCubes::_selectCapPlanes( int code )
 						triangleTable[code].capPlanesTab[plane] = 1 + CAP_TRI_OFFSET;
 
 					printf( "cap plane (4) -> case:%d plane:%d\n", code, plane );
-				}
+				}*/
 			}
 		}
 	}
 	for( int i = 0; i < 6; i++ ) {
-		if( triangleTable[code].capPlanesTab[i] > 0 ) {
+		if( triangleTable[code].capPlanesTab[i] != 0 ) {
 			triangleTable[code].capPlanes = true;
 			break;
 		}

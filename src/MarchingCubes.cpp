@@ -48,55 +48,6 @@ void MarchingCubes::_codeToSignTable( int code, int* tab )
     }
 }
 
-bool MarchingCubes::_vertexIsAtAxisSide( int v, int axis, int sign )
-{
-	bool res = false;
-
-	if( sign )
-		res = v & (1<<axis);
-	else
-		res = !(v & (1<<axis));
-		//return
-	return res;
-}
-
-bool MarchingCubes::_vertexIsNegByAxis( int v, int axis )
-{
-    if( v & (1<<axis) )
-        return false;
-    return true;
-}
-
-
-bool MarchingCubes::_oneBitDiff( int v1, int v2 )
-{
-    int diff = v1 ^ v2;    //  XOR
-    if( diff == 1 || diff == 2 || diff == 4 )
-        return true;
-    return false;
-}
-bool MarchingCubes::_twoBitsDiff( int v1, int v2 )
-{
-    int diff = v1 ^ v2;    //  XOR
-    if( diff == 3 || diff == 5 || diff == 6 )
-        return true;
-    return false;
-}
-
-
-
-int MarchingCubes::_findEdge( int v1, int v2 )
-{
-    for( int edge = 0; edge < 12; edge++ ) {
-        if( v1 == edgeToVertex[edge][0] &&
-            v2 == edgeToVertex[edge][1] )
-           return edge;
-        if( v2 == edgeToVertex[edge][0] &&
-            v1 == edgeToVertex[edge][1] )
-           return edge;
-    }
-    return -1;
-}
 
 
 MarchingCubes::MarchingCubes( VoxelField& f ) : field(f)
@@ -122,7 +73,8 @@ void MarchingCubes::init()
 int MarchingCubes::_bitsToCode( float verts[8] )
 {
     int res = 0;
-    for( int counter = 0; counter < 8; counter++ ) {
+    for( int counter = 0; counter < 8; counter++ )
+	{
         if( verts[counter] >= 0 )
         {
             int i = 1 << counter;
@@ -195,27 +147,6 @@ void MarchingCubes::setOffsets( float sizex, float sizey, float sizez )
 	sizeZ = sizez;
 
 	sizePlane = sizeX * sizeY;
-}
-
-MarchingCubes::Vector3F MarchingCubes::getHalfEdge( int edgeNum )
-{
-    int v1 = edgeToVertex[edgeNum][0];
-    int v2 = edgeToVertex[edgeNum][1];
-
-    Vector3F result;
-
-    float v1x = vertexOffset[v1].f[0];
-    float v1y = vertexOffset[v1].f[1];
-    float v1z = vertexOffset[v1].f[2];
-    float v2x = vertexOffset[v2].f[0];
-    float v2y = vertexOffset[v2].f[1];
-    float v2z = vertexOffset[v2].f[2];
-
-    result.f[0] = (v1x+v2x) / 2;
-    result.f[1] = (v1y+v2y) / 2;
-    result.f[2] = (v1z+v2z) / 2;
-
-    return result;
 }
 
 

@@ -66,9 +66,8 @@ int MarchingCubes::fillInTrianglesIndexed( MarchingCubes::Vertex* vert, int maxV
     for( int z = 0; z < field.getSizeZ()-1; z++ )
     {
 				int borderDebug = 0;
-				if( x < (17-borderDebug) || x > (17+borderDebug) ||
-					y < (16-borderDebug) || y > (16+borderDebug) ||
-					z < (6-borderDebug) || z > (6+borderDebug)		)		;//continue;
+				if( x < (17-borderDebug) || x > (17+borderDebug) ||					y < (16-borderDebug) || y > (16+borderDebug) ||					z < (6-borderDebug) || z > (6+borderDebug)		)
+					;//continue;
 
         Cube2 cube = field.getCube( x, y, z );
 		cube.setGridSize( field.getSizeX(), field.getSizeY(), field.getSizeZ() );
@@ -82,14 +81,10 @@ int MarchingCubes::fillInTrianglesIndexed( MarchingCubes::Vertex* vert, int maxV
                 MarchingCubesCase &cubeCase = getCaseFromValues();
 						usageStats[cubeCase.index]++;
 
-if(//	cubeCase.index != 48 &&
-		cubeCase.index != 49//	&& cubeCase.index != 115
-	) {	int x = 5;
-//	continue;
-}
                 int triNum = 0;
                 // for each triangle
-                for( ; triNum < cubeCase.numTri; triNum++ ) {
+                for( ; triNum < cubeCase.numTri; triNum++ )
+				{
 					// get triangle edges
 					// get cache indexes for all 3 edges
 					// if we had cache initialized - use this value
@@ -130,10 +125,54 @@ if(//	cubeCase.index != 48 &&
                 }
 
 				//*
-				if( cubeCase.capPlanes ) {
-					for( int plane = 0; plane < 6; plane++ ) {
+				if( cubeCase.capPlanes )
+				{
+					for( int plane = 0; plane < 6; plane++ )
+					{
 						int p = cubeCase.capPlanesTab[plane];
+						if( p != 0 )
+						{
+							int offset = _cacheOffsetFromPlane( x, y, z, plane );
 
+							std::map<int,int>::iterator cacheIter = capPlaneCache.find(offset);
+							if( cacheIter != capPlaneCache.end() )
+							{
+								int p2 = cacheIter->second;
+								capPlaneCache.erase(offset);
+
+								if( p2 //!=
+										== p )
+								{
+									int sign = 0;
+
+									int planeSign = 0;
+									if( plane % 2 )
+										planeSign = 1;
+									else
+										planeSign = -1;
+
+
+									sign = planeSign * -p;
+
+//											printf( "x:%d y:%d z:%d p: %d, p2: %d\n", x,y,z, p,p2 );
+									if( p == 1 )
+										_capPlane( vert, tris, x,y,z, plane, sign );
+									else if( p == -1 )
+										_capPlane( vert, tris, x,y,z, plane, sign );
+									else
+										throw "fdgdf";
+								}
+								else {
+									int x = 5;
+								}
+							}
+							else {
+								capPlaneCache.insert( std::pair<int,int>(offset, p) );
+							}
+
+						}
+
+/*
 						int _tri = p / CAP_TRI_OFFSET;
 						p = p % CAP_TRI_OFFSET;
 
@@ -154,7 +193,7 @@ if(//	cubeCase.index != 48 &&
 							else {
 								capPlaneCache.insert( std::pair<int,int>(offset, p) );
 							}
-						}
+						}*/
 					}
 				}//*/
 			}	// cur tri
@@ -214,7 +253,7 @@ int MarchingCubes::_capPlane( MarchingCubes::Vertex* vert, MarchingCubes::Triang
 	//	compute face normal
 	Vector3F  normal, normal2;
 
-	if( side == 0 ) {
+	if( side == -1 ) {
 		getCrossProduct( delta1.f, delta2.f, normal.f );
 		getCrossProduct( delta21.f, delta22.f, normal2.f );
 	}
@@ -240,7 +279,7 @@ normal2.normalise();
 	vert[ index[3] ].norm += normal2;
 
 // TODO: sprawdzic te ify
-	if( side == 0 ) {
+	if( side == -1 ) {
 		tris[currTriangle].i[0] = index[0];
 		tris[currTriangle].i[1] = index[2];
 		tris[currTriangle].i[2] = index[1];

@@ -46,7 +46,17 @@ class MarchingCubes
 public:
     // 3D vector class storing float position
     struct  Vector3F {
+
         float f[3];
+
+    	Vector3F( float x, float y, float z ) {
+			f[0] = x;
+			f[1] = y;
+			f[2] = z;
+    	}
+    	Vector3F() {
+			Vector3F( 0.0f, 0.0f, 0.0f );
+		}
         Vector3F& operator+ (Vector3F& v1) {
             Vector3F res;
             res.f[0] = f[0] + v1.f[0];
@@ -62,6 +72,14 @@ public:
 
             return *this;
         }
+/*        Vector3F& operator*= (const float f)
+        {
+            f[0] = f[0] * f;
+            f[1] *= f;
+            f[2] *= f;
+
+            return *this;
+        }*/
         Vector3F operator- (Vector3F& v1) {
             Vector3F res;
             res.f[0] = f[0] - v1.f[0];
@@ -69,6 +87,7 @@ public:
             res.f[2] = f[2] - v1.f[2];
             return res;
         };
+
         void setValue( float x, float y, float z ) {
 			f[0] = x;
 			f[1] = y;
@@ -117,7 +136,7 @@ public:
 //      TriangleI tris[10];
   //      Vector3F normal;
 		unsigned char	capPlanes;
-		unsigned char	capPlanesTab[6];
+		char	capPlanesTab[6];
     };
 
 	void	setOffsets( float sizex, float sizey, float sizez );

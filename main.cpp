@@ -715,8 +715,8 @@ printf("OpenGL version supported by this platform (%s): \n", glGetString(GL_VERS
 	march.init();
 	cf.setSize( GRID_SIZE_X, GRID_SIZE_Y, GRID_SIZE_Z );
 
-//	cf.setAmbiguousCase( 5 );
-	cf.setPerlinNoise( 0 );
+	cf.setAmbiguousCase( 2 );
+//	cf.setPerlinNoise( 0 );
 //	cf.setZeroSlice();
 
 	while (!bQuit)
@@ -741,7 +741,7 @@ printf("OpenGL version supported by this platform (%s): \n", glGetString(GL_VERS
 
 							phase = //59.35;	//
 									23.85f;	//20,20,20
-			updateVoxelField( phase );
+//			updateVoxelField( phase );
 
             if( anim || geomNeedsUpdate ) {
                 geomNeedsUpdate = false;
