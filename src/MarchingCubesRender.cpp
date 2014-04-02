@@ -50,7 +50,6 @@ int MarchingCubes::fillInTriangles( MarchingCubes::TriangleF tris[8] )
     return triNum;
 }
 
-
 int MarchingCubes::fillInTrianglesIndexed( MarchingCubes::Vertex* vert, int maxVert, MarchingCubes::TriangleI* tris, int maxTris, int& vertexNum, int& triNum )
 {
 	std::map<int,int>	capPlaneCache;
@@ -65,10 +64,6 @@ int MarchingCubes::fillInTrianglesIndexed( MarchingCubes::Vertex* vert, int maxV
     for( int y = 0; y < field.getSizeY()-1; y++ )
     for( int z = 0; z < field.getSizeZ()-1; z++ )
     {
-				int borderDebug = 0;
-				if( x < (17-borderDebug) || x > (17+borderDebug) ||					y < (16-borderDebug) || y > (16+borderDebug) ||					z < (6-borderDebug) || z > (6+borderDebug)		)
-					;//continue;
-
         Cube2 cube = field.getCube( x, y, z );
 		cube.setGridSize( field.getSizeX(), field.getSizeY(), field.getSizeZ() );
 
@@ -138,7 +133,7 @@ int MarchingCubes::fillInTrianglesIndexed( MarchingCubes::Vertex* vert, int maxV
 							if( cacheIter != capPlaneCache.end() )
 							{
 								int p2 = cacheIter->second;
-								capPlaneCache.erase(offset);
+								capPlaneCache.erase( offset );
 
 								if( p2 //!=
 										== p )
@@ -172,28 +167,6 @@ int MarchingCubes::fillInTrianglesIndexed( MarchingCubes::Vertex* vert, int maxV
 
 						}
 
-/*
-						int _tri = p / CAP_TRI_OFFSET;
-						p = p % CAP_TRI_OFFSET;
-
-						if( p ) {
-							int offset = _cacheOffsetFromPlane( x, y, z, plane );
-							if( capPlaneCache.find(offset) != capPlaneCache.end() ) {
-								int p2 = capPlaneCache.find(offset)->second;
-								capPlaneCache.erase(offset);
-
-								if( p2 != p ) {
-//											printf( "x:%d y:%d z:%d p: %d, p2: %d\n", x,y,z, p,p2 );
-									if( p == 1 )
-										_capPlane( vert, tris, x,y,z, plane, 0 );
-									else if( p == 2 )
-										_capPlane( vert, tris, x,y,z, plane, 1 );
-								}
-							}
-							else {
-								capPlaneCache.insert( std::pair<int,int>(offset, p) );
-							}
-						}*/
 					}
 				}//*/
 			}	// cur tri
@@ -204,12 +177,12 @@ int MarchingCubes::fillInTrianglesIndexed( MarchingCubes::Vertex* vert, int maxV
 
     for( int v = 0; v < currVert; v++ )
 	{
-            if( vert[v].norm.length() < 0.5 ) {
-                int x = 5;
-            }
-            if( vert[v].used < 10 ) {
-				lenVector[ vert[v].used ] ++;
-            }
+		if( vert[v].norm.length() < 0.5 ) {
+			int x = 5;
+		}
+		if( vert[v].used < 10 ) {
+			lenVector[ vert[v].used ] ++;
+		}
         vert[v].norm.normalise();
     }
 
@@ -217,7 +190,6 @@ int MarchingCubes::fillInTrianglesIndexed( MarchingCubes::Vertex* vert, int maxV
     triNum = currTriangle;
 
 //static  int ii = 0;	if( !ii ) {	ii ++;	printf( "currTriangle:%d currVert:%d", currTriangle, currVert );}
-
     return currTriangle;
 }
 
@@ -231,7 +203,6 @@ int MarchingCubes::_capPlane( MarchingCubes::Vertex* vert, MarchingCubes::Triang
 //	if( plane == 2 || plane == 3 )	;
 //	else							side = 1 - side;
 
-
 	int index[4];	// = {-1};
 	for( int i = 0; i < 4; i++ )
 		index[i] = _cacheVertex( vert, x,y,z, edges[i] );
@@ -240,9 +211,6 @@ int MarchingCubes::_capPlane( MarchingCubes::Vertex* vert, MarchingCubes::Triang
 	Vector3F vec2 = vert[ index[1] ].pos;
 	Vector3F vec3 = vert[ index[2] ].pos;
 	Vector3F vec4 = vert[ index[3] ].pos;
-
-//	Vector3F  delta_1 = vec2 - vec1;
-//	Vector3F  delta_2 = vec3 - vec1;
 
 	Vector3F  delta1 = vec2 - vec1;
 	Vector3F  delta2 = vec3 - vec1;
@@ -261,14 +229,10 @@ int MarchingCubes::_capPlane( MarchingCubes::Vertex* vert, MarchingCubes::Triang
 		getCrossProduct( delta2.f, delta1.f, normal.f );
 		getCrossProduct( delta22.f, delta21.f, normal2.f );
 	}
-normal.normalise();
-normal2.normalise();
+	normal.normalise();
+	normal2.normalise();
 
 	//*	// add normal to the cache
-
-//	Vector3F normalSum = normal + normal2;
-//    for( int ii = 0; ii < 4; ii++ )
-//		vert[ index[ii] ].norm += normalSum;
 
 	vert[ index[0] ].norm += normal;
 	vert[ index[1] ].norm += normal;

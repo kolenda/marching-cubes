@@ -207,6 +207,9 @@ int currVert;
 
 bool _vertexIsAtAxisSide( int v, int axis, int sign );
 
+	int			_planeFromAxisSign( int axis, int sign );
+	int			_planeToAxis( int plane );
+	int			_planeToSign( int plane );
 
     int         _bitsToCode( float verts[8] );
 

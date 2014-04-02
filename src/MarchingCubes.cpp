@@ -49,6 +49,22 @@ void MarchingCubes::_codeToSignTable( int code, int* tab )
 }
 
 
+int MarchingCubes::_planeFromAxisSign( int axis, int sign )
+{
+	int plane = axis * 2 + sign;
+	return plane;
+}
+
+int MarchingCubes::_planeToAxis( int plane )
+{
+
+}
+int MarchingCubes::_planeToSign( int plane )
+{
+
+}
+
+
 
 MarchingCubes::MarchingCubes( VoxelField& f ) : field(f)
 {

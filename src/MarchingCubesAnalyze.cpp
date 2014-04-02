@@ -88,12 +88,6 @@ void MarchingCubes::_fillEdges()
     }
 }
 
-int _planeFromAxisSign( int axis, int sign )
-{
-	int plane = axis * 2 + sign;
-	return plane;
-}
-
 void MarchingCubes::_fillPlanes()
 {
 	for( int axis = 0; axis < 3; axis++ )
