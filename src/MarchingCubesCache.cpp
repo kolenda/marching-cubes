@@ -33,17 +33,7 @@ int MarchingCubes::_cacheVertex( MarchingCubes::Vertex* vert, int x, int y, int 
 		vert[currVert].used = 0;
 		res = currVert++;
 	}
-
-//					if( res == 148 ) {
-//						int x = 5;
-//					}
 	return res;
-/*    int index = _cacheOffsetFromCubeEdge( x, y, z, e );
-    if( cacheField[index] < 0 ) {
-        cacheField[index] = vertexNum;
-        vertexNum++;
-    }*/
-//    return index;
 }
 
 int MarchingCubes::_cacheOffsetFromCubeEdge( int x, int y, int z, int e )
@@ -66,15 +56,28 @@ int MarchingCubes::_cacheOffsetFromCubeEdge( int x, int y, int z, int e )
     int res = x + y * cacheSizeX + z*cacheSizeX*cacheSizeY;
     res = (res * 4) + e;
 
-//	printf( " ,  res: %d\n", res );
-
     return res;
 }
 
 int MarchingCubes::_cacheOffsetFromPlane( int x, int y, int z, int plane )
 {
+	int axis = _planeToAxis( plane );
+	int sign = _planeToSign( plane );
+
+	if( sign > 0 ) {
+		if( axis == 0 )
+			x++;
+		else if( axis == 1 )
+			y++;
+		else if( axis == 2 )
+			z++;
+		else
+			throw "_cacheOffsetFromPlane error!";
+
+		plane = _planeFromAxisSign( axis, 0 );
+	}
 //	int offset = _cacheOffsetFromCubeEdge( x, y, z, plane );
-	bool mirrored = false;
+/*	bool mirrored = false;
 	if( plane == 5 ) {
 		mirrored = true;
 		plane--;
@@ -89,11 +92,10 @@ int MarchingCubes::_cacheOffsetFromPlane( int x, int y, int z, int plane )
 		mirrored = true;
 		plane--;
 		x++;
-	}
+	}*/
 
     int res = x + y * cacheSizeX + z*cacheSizeX*cacheSizeY;
-    res = (res * 6 //4
-					) + plane;
+    res = (res * 6) + plane;
     return res;
 }
 
@@ -126,12 +128,11 @@ void MarchingCubes::_cacheFree()
     if( cacheField ) {
         delete[] cacheField;
         cacheField = NULL;
-
-        cacheSizeX = 0;
-        cacheSizeY = 0;
-        cacheSizeZ = 0;
-        cacheSize = 0;
     }
+	cacheSizeX = 0;
+	cacheSizeY = 0;
+	cacheSizeZ = 0;
+	cacheSize = 0;
 }
 
 void MarchingCubes::_cacheClear()

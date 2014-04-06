@@ -112,7 +112,7 @@ int MarchingCubes::_fixPlaneEdgesNormal( int plane, int planeEdges[4] )
 		throw "_fixPlaneEdgesNormal: wrong sign error!";
 
 	float dot = dotProduct( normal, normal2 );
-	if( dot > 0.0f ) {
+	if( dot < 0.0f ) {
 		int tmp = planeEdges[1];
 		planeEdges[1] = planeEdges[2];
 		planeEdges[2] = tmp;

@@ -77,8 +77,8 @@ void MarchingCubes::init()
     _fillPlanes();
     generateTriangles();
 
-	int o1 = _cacheOffsetFromPlane( 0,0,0, 1 );
-	int o2 = _cacheOffsetFromPlane( 0,0,0, 4 );
+//	int o1 = _cacheOffsetFromPlane( 0,0,0, 1 );
+//	int o2 = _cacheOffsetFromPlane( 0,0,0, 4 );
 
     printTable();
 }
@@ -148,7 +148,7 @@ void MarchingCubes::printTable()
 
 
 
-void MarchingCubes::setValues( Cube2& cube )	//float vert[8] )
+void MarchingCubes::setValues( Cube2& cube )
 {
     for( int v = 0; v < 8; v++ )
         vertex[v] = cube.getVec(v);
