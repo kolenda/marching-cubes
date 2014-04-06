@@ -36,6 +36,8 @@ bool wireframe = false;
 bool print = false;
 float phase = 0.0f;
 
+int currentTestCase = 1;
+
 float sideAngle =   -45.0f;
 float upAngle =   45.0f;
 float zoomOut   = 40.0f;
@@ -715,10 +717,6 @@ printf("OpenGL version supported by this platform (%s): \n", glGetString(GL_VERS
 	march.init();
 	cf.setSize( GRID_SIZE_X, GRID_SIZE_Y, GRID_SIZE_Z );
 
-	cf.setAmbiguousCase( 2 );
-//	cf.setPerlinNoise( 0 );
-//	cf.setZeroSlice();
-
 	while (!bQuit)
 	{
         if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
@@ -741,7 +739,16 @@ printf("OpenGL version supported by this platform (%s): \n", glGetString(GL_VERS
 
 							phase = //59.35;	//
 									23.85f;	//20,20,20
-//			updateVoxelField( phase );
+
+			if( currentTestCase >= 0 && currentTestCase < 6 )
+				cf.setAmbiguousCase( currentTestCase );
+			else if( currentTestCase == 6 ) {
+				cf.setSize( GRID_SIZE_X, GRID_SIZE_Y, GRID_SIZE_Z );
+				cf.setPerlinNoise( 0 );
+			}
+			else if( currentTestCase == 7 )
+				updateVoxelField( phase );
+//	cf.setZeroSlice();
 
             if( anim || geomNeedsUpdate ) {
                 geomNeedsUpdate = false;
@@ -875,6 +882,20 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 						activeTriangle -= 100;
                 	else if( activeTriangle >= 0 )
 						activeTriangle--;
+					break;
+				}
+
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9':
+				{
+					currentTestCase = wParam - '1';
 					break;
 				}
             }

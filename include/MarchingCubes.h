@@ -204,8 +204,10 @@ int currVert;
     int         _fixTrianglesNormals( int code );
 //  --triangle table generation--
 
+	int			_fixPlaneEdgesNormal( int plane, int planeEdges[4] );
 
-bool _vertexIsAtAxisSide( int v, int axis, int sign );
+
+	bool		_vertexIsAtAxisSide( int v, int axis, int sign );
 
 	int			_planeFromAxisSign( int axis, int sign );
 	int			_planeToAxis( int plane );

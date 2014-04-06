@@ -146,7 +146,6 @@ int MarchingCubes::fillInTrianglesIndexed( MarchingCubes::Vertex* vert, int maxV
 									else
 										planeSign = -1;
 
-
 									sign = planeSign * -p;
 
 //											printf( "x:%d y:%d z:%d p: %d, p2: %d\n", x,y,z, p,p2 );

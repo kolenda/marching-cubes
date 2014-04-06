@@ -88,6 +88,42 @@ void MarchingCubes::_fillEdges()
     }
 }
 
+int MarchingCubes::_fixPlaneEdgesNormal( int plane, int planeEdges[4] )
+{
+	Vector3F vec[3];
+	for( int i = 0; i < 3; i++ )
+		vec[i] = getHalfEdge( planeEdges[i] );
+
+	Vector3F  delta1 = vec[1] - vec[0];
+	Vector3F  delta2 = vec[2] - vec[0];
+
+	Vector3F  normal;
+	getCrossProduct( delta1.f, delta2.f, normal.f );
+
+	int axis = _planeToAxis( plane );
+	int sign = _planeToSign( plane );
+
+	Vector3F normal2(0.0f,0.0f,0.0f);
+	if( sign == 1 )
+		normal2.f[axis] = 1.0f;
+	else if( sign == 0 )
+		normal2.f[axis] = -1.0f;
+	else
+		throw "_fixPlaneEdgesNormal: wrong sign error!";
+
+	float dot = dotProduct( normal, normal2 );
+	if( dot > 0.0f ) {
+		int tmp = planeEdges[1];
+		planeEdges[1] = planeEdges[2];
+		planeEdges[2] = tmp;
+		return 1;
+	}
+	else if( dot == 0.0f )
+		throw "_fixPlaneEdgesNormal: zero dot product error!";
+
+	return 0;
+}
+
 void MarchingCubes::_fillPlanes()
 {
 	for( int axis = 0; axis < 3; axis++ )
@@ -108,6 +144,8 @@ void MarchingCubes::_fillPlanes()
 							planeToEdge[plane][edgeCounter++] = edge;
 			}
 			assert( edgeCounter == 4 );
+
+			_fixPlaneEdgesNormal( plane, planeToEdge[plane] );
 
 			for( int vert = 0; vert < 8; vert++ ) {
 				if( _vertexIsAtAxisSide( vert, axis, sign ) )
@@ -144,18 +182,19 @@ MarchingCubes::Vector3F MarchingCubes::getHalfEdge( int edgeNum )
 void MarchingCubes::_getEdgesAlongAxis( int axis, int edges[4] )
 {
     int counter = 0;
-    for( int edge = 0; edge < 12; edge++ ) {
-
-					bool b10 = _vertexIsAtAxisSide( edgeToVertex[edge][0], axis, false );
+    for( int edge = 0; edge < 12; edge++ )
+		{
+/*					bool b10 = _vertexIsAtAxisSide( edgeToVertex[edge][0], axis, false );
 					bool b11 = _vertexIsAtAxisSide( edgeToVertex[edge][0], axis, true );
 					bool b2 = _vertexIsNegByAxis( edgeToVertex[edge][0], axis );
 					if( b10 != b2 ) {
 						int x = 5;
-					}
+					}*/
         if( _vertexIsNegByAxis(edgeToVertex[edge][0],axis) !=
             _vertexIsNegByAxis(edgeToVertex[edge][1],axis) )
             edges[counter++] = edge;
-    }
+	}
+	assert( counter == 4 );
 }
 
 int MarchingCubes::_getVertexBySymmetry( int vertex, int axis )

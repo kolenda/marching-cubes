@@ -57,13 +57,12 @@ int MarchingCubes::_planeFromAxisSign( int axis, int sign )
 
 int MarchingCubes::_planeToAxis( int plane )
 {
-
+	return plane / 2;
 }
 int MarchingCubes::_planeToSign( int plane )
 {
-
+	return plane % 2;
 }
-
 
 
 MarchingCubes::MarchingCubes( VoxelField& f ) : field(f)

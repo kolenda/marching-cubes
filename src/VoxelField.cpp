@@ -262,8 +262,6 @@ void VoxelField::setAmbiguousCase( int num )
 		setVal( 1,2,1, -5 );
 	}
 
-
-
 	else if( num == 4 ) {
 		setSize( 2, 2, 3 );
 		setVal( 0,0,0, -5 );
@@ -298,7 +296,6 @@ void VoxelField::setAmbiguousCase( int num )
 		setVal( 0,1,2, 10 );
 		setVal( 1,1,2, -5 );
 	}
-
 }
 
 void VoxelField::setSpheres( float phase )
