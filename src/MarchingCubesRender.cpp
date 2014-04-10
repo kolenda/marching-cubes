@@ -138,23 +138,22 @@ int MarchingCubes::fillInTrianglesIndexed( MarchingCubes::Vertex* vert, int maxV
 								if( p2 //!=
 										== p )
 								{
-									int sign = 0;
+									int sign = p;	//0;
 
-									int planeSign = 0;
-									if( plane % 2 )
-										planeSign = 1;
-									else
-										planeSign = -1;
-
-									sign = planeSign * -p;
+//									int planeSign = 0;
+//									if( plane % 2 )
+//										planeSign = 1;
+//									else
+//										planeSign = -1;
+//									sign = planeSign * -p;
 
 //											printf( "x:%d y:%d z:%d p: %d, p2: %d\n", x,y,z, p,p2 );
-									if( p == 1 )
+//									if( p == 1 )
 										_capPlane( vert, tris, x,y,z, plane, sign );
-									else if( p == -1 )
-										_capPlane( vert, tris, x,y,z, plane, sign );
-									else
-										throw "fdgdf";
+//									else if( p == -1 )
+//										_capPlane( vert, tris, x,y,z, plane, sign );
+//									else
+//										throw "fdgdf";
 								}
 								else {
 									int x = 5;
@@ -244,17 +243,6 @@ int MarchingCubes::_capPlane( MarchingCubes::Vertex* vert, MarchingCubes::Triang
 // TODO: sprawdzic te ify
 	if( side == -1 ) {
 		tris[currTriangle].i[0] = index[0];
-		tris[currTriangle].i[1] = index[2];
-		tris[currTriangle].i[2] = index[1];
-		currTriangle++;
-
-		tris[currTriangle].i[0] = index[1];
-		tris[currTriangle].i[1] = index[2];
-		tris[currTriangle].i[2] = index[3];
-		currTriangle++;
-	}
-	else if( side == 1 ) {
-		tris[currTriangle].i[0] = index[0];
 		tris[currTriangle].i[1] = index[1];
 		tris[currTriangle].i[2] = index[2];
 		currTriangle++;
@@ -262,6 +250,17 @@ int MarchingCubes::_capPlane( MarchingCubes::Vertex* vert, MarchingCubes::Triang
 		tris[currTriangle].i[0] = index[1];
 		tris[currTriangle].i[1] = index[3];
 		tris[currTriangle].i[2] = index[2];
+		currTriangle++;
+	}
+	else if( side == 1 ) {
+		tris[currTriangle].i[0] = index[0];
+		tris[currTriangle].i[1] = index[2];
+		tris[currTriangle].i[2] = index[1];
+		currTriangle++;
+
+		tris[currTriangle].i[0] = index[1];
+		tris[currTriangle].i[1] = index[2];
+		tris[currTriangle].i[2] = index[3];
 		currTriangle++;
 	}
 }

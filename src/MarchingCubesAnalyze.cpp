@@ -287,9 +287,9 @@ if( i == 49 ) {
             tris += _findFourVertex( i );
             tris += _findSnake( i );
 
-			_selectCapPlanes( i );
-
             int fixed = _fixTrianglesNormals( i );
+
+			_selectCapPlanes( i );
         }
     }
     return 1;
@@ -793,6 +793,10 @@ int MarchingCubes::_selectCapPlanes( int code )
 					triangleOnPlaneCount++;
 				}
 				if( triangleOnPlaneCount == 2 ) {
+if( code == 150 && plane == 1 ) {
+	int x =5;
+}
+
 					Vector3F verts[3];
 					for( int v = 0; v < 3; v++ )
 						verts[v] = getHalfEdge( triI.i[v] );
@@ -827,6 +831,9 @@ int MarchingCubes::_selectCapPlanes( int code )
 						else
 							throw "sdfsd";
 					}
+
+					if( sign == 0 )
+						planeSign = -planeSign;
 
 					triangleTable[code].capPlanesTab[plane] = planeSign;
 
