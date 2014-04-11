@@ -88,17 +88,28 @@ void MarchingCubes::_fillEdges()
     }
 }
 
+MarchingCubes::Vector3F MarchingCubes::getTriangleNormal( const Vector3F& v0, const Vector3F& v1, const Vector3F& v2 )
+{
+	Vector3F  delta1 = v1 - v0;
+	Vector3F  delta2 = v2 - v0;
+
+	Vector3F  normal;
+	getCrossProduct( delta1.f, delta2.f, normal.f );
+	return normal;
+}
+
 int MarchingCubes::_fixPlaneEdgesNormal( int plane, int planeEdges[4] )
 {
 	Vector3F vec[3];
 	for( int i = 0; i < 3; i++ )
 		vec[i] = getHalfEdge( planeEdges[i] );
 
-	Vector3F  delta1 = vec[1] - vec[0];
-	Vector3F  delta2 = vec[2] - vec[0];
+//	Vector3F  delta1 = vec[1] - vec[0];
+//	Vector3F  delta2 = vec[2] - vec[0];
+//	Vector3F  normal;
+//	getCrossProduct( delta1.f, delta2.f, normal.f );
 
-	Vector3F  normal;
-	getCrossProduct( delta1.f, delta2.f, normal.f );
+	Vector3F  normal = getTriangleNormal( vec[0], vec[1], vec[2] );
 
 	int axis = _planeToAxis( plane );
 	int sign = _planeToSign( plane );
@@ -791,11 +802,11 @@ if( code == 150 && plane == 1 ) {
 					for( int v = 0; v < 3; v++ )
 						verts[v] = getHalfEdge( triI.i[v] );
 
-					Vector3F  delta1 = verts[1] - verts[0];
-					Vector3F  delta2 = verts[2] - verts[0];
-
-					Vector3F  normal;
-					getCrossProduct( delta1.f, delta2.f, normal.f );
+//					Vector3F  delta1 = verts[1] - verts[0];
+//					Vector3F  delta2 = verts[2] - verts[0];
+//					Vector3F  normal;
+//					getCrossProduct( delta1.f, delta2.f, normal.f );
+					Vector3F  normal = getTriangleNormal( verts[0], verts[1], verts[2] );
 
 					float val = getComponentByIndex( normal, axis );
 
@@ -857,10 +868,11 @@ int MarchingCubes::_fixTrianglesNormals( int code )
         Vector3F v2 = getHalfEdge(e2);
         Vector3F v3 = getHalfEdge(e3);
 
-        Vector3F delta1 = v2 - v1;
-        Vector3F delta2 = v3 - v1;
-        Vector3F normal;
-        getCrossProduct( delta1.f, delta2.f, normal.f );
+//        Vector3F delta1 = v2 - v1;
+//        Vector3F delta2 = v3 - v1;
+//        Vector3F normal;
+//        getCrossProduct( delta1.f, delta2.f, normal.f );
+		Vector3F  normal = getTriangleNormal( v1, v2, v3 );
 
         if( dotProduct(normal, cubeCase.normal[t]) < 0 ) {
             int tmp = cubeCase.tris[t][1];

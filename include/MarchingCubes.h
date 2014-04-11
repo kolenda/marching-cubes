@@ -73,13 +73,21 @@ public:
 
             return *this;
         }
-        Vector3F operator- (Vector3F& v1) {
+        Vector3F operator- (const Vector3F& v1) const {
             Vector3F res;
             res.f[0] = f[0] - v1.f[0];
             res.f[1] = f[1] - v1.f[1];
             res.f[2] = f[2] - v1.f[2];
             return res;
         };
+        Vector3F& operator-= (const Vector3F& v1)
+        {
+            f[0] -= v1.f[0];
+            f[1] -= v1.f[1];
+            f[2] -= v1.f[2];
+
+            return *this;
+        }
 
         void setValue( float x, float y, float z ) {
 			f[0] = x;
@@ -277,6 +285,9 @@ public:
     int     fillInTrianglesIndexed( MarchingCubes::Vertex* vert, int maxVert, MarchingCubes::TriangleI* tris, int maxTris, int& vertexNum, int& triNum );
 
     int     getUsageStats( int i ) { return usageStats[i]; }
+
+
+	static	Vector3F	getTriangleNormal( const Vector3F& v0, const Vector3F& v1, const Vector3F& v2 );
 
     // just some math helpers to avoid any deps
     static void getCrossProduct( float v1[3], float v2[3], float cross[3] ) {

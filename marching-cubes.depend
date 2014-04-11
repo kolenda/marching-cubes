@@ -15,7 +15,7 @@
 	<assert.h>
 	<string.h>
 
-1397177879 d:\dev\3d\marching-cubes\include\marchingcubes.h
+1397221163 d:\dev\3d\marching-cubes\include\marchingcubes.h
 	"VoxelField.h"
 	<math.h>
 
@@ -64,7 +64,7 @@
 	<X11/Xmd.h>
 	<GL/glew.h>
 
-1397175627 source:d:\dev\3d\marching-cubes\src\marchingcubesanalyze.cpp
+1397221321 source:d:\dev\3d\marching-cubes\src\marchingcubesanalyze.cpp
 	<set>
 	<stdio.h>
 	<string.h>
@@ -75,7 +75,7 @@
 	<string.h>
 	"MarchingCubes.h"
 
-1397178049 source:d:\dev\3d\marching-cubes\src\marchingcubesrender.cpp
+1397222228 source:d:\dev\3d\marching-cubes\src\marchingcubesrender.cpp
 	<set>
 	<map>
 	<stdio.h>

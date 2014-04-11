@@ -12,44 +12,6 @@
 #include "MarchingCubes.h"
 
 
-/*int MarchingCubes::fillInTriangles( MarchingCubes::TriangleF tris[8] )
-{
-    MarchingCubesCase &cubeCase = getCaseFromValues();
-    usageStats[cubeCase.index]++;
-
-    int triNum = 0;
-    for( ; triNum < cubeCase.numTri; triNum++ ) {
-        int e1 = cubeCase.tris[triNum][0];
-        int e2 = cubeCase.tris[triNum][1];
-        int e3 = cubeCase.tris[triNum][2];
-        Vector3F vec1 = getVertexFromEdge( e1 );
-        Vector3F vec2 = getVertexFromEdge( e2 );
-        Vector3F vec3 = getVertexFromEdge( e3 );
-
-        tris[triNum].v[0].pos.f[0] = vec1.f[0];
-        tris[triNum].v[0].pos.f[1] = vec1.f[1];
-        tris[triNum].v[0].pos.f[2] = vec1.f[2];
-
-        tris[triNum].v[1].pos.f[0] = vec2.f[0];
-        tris[triNum].v[1].pos.f[1] = vec2.f[1];
-        tris[triNum].v[1].pos.f[2] = vec2.f[2];
-
-        tris[triNum].v[2].pos.f[0] = vec3.f[0];
-        tris[triNum].v[2].pos.f[1] = vec3.f[1];
-        tris[triNum].v[2].pos.f[2] = vec3.f[2];
-
-        Vector3F  delta1 = vec2 - vec1;
-        Vector3F  delta2 = vec3 - vec1;
-
-        Vector3F  normal;
-        getCrossProduct( delta1.f, delta2.f, normal.f );
-        tris[triNum].v[0].norm = normal;
-        tris[triNum].v[1].norm = normal;
-        tris[triNum].v[2].norm = normal;
-    }
-    return triNum;
-}*/
-
 int MarchingCubes::fillInTrianglesIndexed( MarchingCubes::Vertex* vert, int maxVert, MarchingCubes::TriangleI* tris, int maxTris, int& vertexNum, int& triNum )
 {
 	std::map<int,int>	capPlaneCache;
@@ -94,12 +56,14 @@ int MarchingCubes::fillInTrianglesIndexed( MarchingCubes::Vertex* vert, int maxV
 				Vector3F vec2 = vert[index2].pos;
 				Vector3F vec3 = vert[index3].pos;
 
-				Vector3F  delta1 = vec2 - vec1;
-				Vector3F  delta2 = vec3 - vec1;
+//				Vector3F  delta1 = vec2 - vec1;
+//				Vector3F  delta2 = vec3 - vec1;
+
+//				Vector3F  normal;
+//				getCrossProduct( delta1.f, delta2.f, normal.f );
 
 				//	compute face normal
-				Vector3F  normal;
-				getCrossProduct( delta1.f, delta2.f, normal.f );
+				Vector3F  normal = getTriangleNormal( vec1, vec2, vec3 );
 
 				// Check for 0 or we get NaN errors
 				if( normal.isNotZero() ) {
@@ -179,6 +143,25 @@ int MarchingCubes::_capPlane( MarchingCubes::Vertex* vert, MarchingCubes::Triang
 	Vector3F vec3 = vert[ index[2] ].pos;
 	Vector3F vec4 = vert[ index[3] ].pos;
 
+	Vector3F  normal21;
+	Vector3F  normal22;
+
+	if( side == -1 ) {
+		normal21 = getTriangleNormal( vec1, vec2, vec3 );
+		normal22 = getTriangleNormal( vec4, vec3, vec2 );
+	}
+	else if( side == 1 ) {
+		normal21 = getTriangleNormal( vec2, vec1, vec3 );
+		normal22 = getTriangleNormal( vec3, vec4, vec2 );
+	}
+	else
+		throw "side";
+
+	normal21.normalise();
+	normal22.normalise();
+
+
+
 	Vector3F  delta1 = vec2 - vec1;
 	Vector3F  delta2 = vec3 - vec1;
 
@@ -198,6 +181,15 @@ int MarchingCubes::_capPlane( MarchingCubes::Vertex* vert, MarchingCubes::Triang
 	}
 	normal.normalise();
 	normal2.normalise();
+
+
+	Vector3F d1 = normal - normal21;
+	Vector3F d2 = normal2 - normal22;
+	if( d1.isNotZero() ||
+		d2.isNotZero() ) {
+		int x = 5;
+		//throw "normal";
+	}
 
 	//*	// add normal to the cache
 

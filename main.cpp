@@ -320,11 +320,11 @@ void drawTris( float x, float y, float z, MarchingCubes::TriangleF* tris, int tr
 		MarchingCubes::TriangleF&     tri = tris[t];
 		glColor3f( 0.9f, 0.9f, 0.9f );
 
-		MarchingCubes::Vector3F  delta1 = tri.v[1].pos - tri.v[0].pos;
-		MarchingCubes::Vector3F  delta2 = tri.v[2].pos - tri.v[0].pos;
-
-		MarchingCubes::Vector3F  normal;
-		MarchingCubes::getCrossProduct( delta1.f, delta2.f, normal.f );
+//		MarchingCubes::Vector3F  delta1 = tri.v[1].pos - tri.v[0].pos;
+//		MarchingCubes::Vector3F  delta2 = tri.v[2].pos - tri.v[0].pos;
+//		MarchingCubes::Vector3F  normal;
+//		MarchingCubes::getCrossProduct( delta1.f, delta2.f, normal.f );
+		MarchingCubes::Vector3F  normal = MarchingCubes::getTriangleNormal( tri.v[0], tri.v[1], tri.v[2] );
 
 		glNormal3f( normal.f[0], normal.f[1], normal.f[2] );
 
