@@ -12,7 +12,7 @@
 #include "MarchingCubes.h"
 
 
-int MarchingCubes::fillInTriangles( MarchingCubes::TriangleF tris[8] )
+/*int MarchingCubes::fillInTriangles( MarchingCubes::TriangleF tris[8] )
 {
     MarchingCubesCase &cubeCase = getCaseFromValues();
     usageStats[cubeCase.index]++;
@@ -48,7 +48,7 @@ int MarchingCubes::fillInTriangles( MarchingCubes::TriangleF tris[8] )
         tris[triNum].v[2].norm = normal;
     }
     return triNum;
-}
+}*/
 
 int MarchingCubes::fillInTrianglesIndexed( MarchingCubes::Vertex* vert, int maxVert, MarchingCubes::TriangleI* tris, int maxTris, int& vertexNum, int& triNum )
 {
@@ -67,108 +67,82 @@ int MarchingCubes::fillInTrianglesIndexed( MarchingCubes::Vertex* vert, int maxV
         Cube2 cube = field.getCube( x, y, z );
 		cube.setGridSize( field.getSizeX(), field.getSizeY(), field.getSizeZ() );
 
-//        if( cube.notEmpty() )
-		{
-            if( currTriangle < maxTris - 10 ) {
-                TriangleF     tmpTris[10];
-                setValues( cube );
+		if( currTriangle < maxTris - 10 ) {
+			TriangleF     tmpTris[10];
+			setValues( cube );
 
-                MarchingCubesCase &cubeCase = getCaseFromValues();
-						usageStats[cubeCase.index]++;
+			MarchingCubesCase &cubeCase = getCaseFromValues();
+					usageStats[cubeCase.index]++;
 
-                int triNum = 0;
-                // for each triangle
-                for( ; triNum < cubeCase.numTri; triNum++ )
+			int triNum = 0;
+			// for each triangle
+			for( ; triNum < cubeCase.numTri; triNum++ )
+			{
+				// get triangle edges
+				// get cache indexes for all 3 edges
+				// if we had cache initialized - use this value
+				int e1 = cubeCase.tris[triNum][0];
+				int e2 = cubeCase.tris[triNum][1];
+				int e3 = cubeCase.tris[triNum][2];
+
+				int index1 = _cacheVertex( vert, x,y,z, e1 );
+				int index2 = _cacheVertex( vert, x,y,z, e2 );
+				int index3 = _cacheVertex( vert, x,y,z, e3 );
+
+				// get 3 resulting vertices
+				Vector3F vec1 = vert[index1].pos;
+				Vector3F vec2 = vert[index2].pos;
+				Vector3F vec3 = vert[index3].pos;
+
+				Vector3F  delta1 = vec2 - vec1;
+				Vector3F  delta2 = vec3 - vec1;
+
+				//	compute face normal
+				Vector3F  normal;
+				getCrossProduct( delta1.f, delta2.f, normal.f );
+
+				// Check for 0 or we get NaN errors
+				if( normal.isNotZero() ) {
+					normal.normalise();
+
+					// add normal to the cache
+					vert[index1].norm += normal;
+					vert[index2].norm += normal;
+					vert[index3].norm += normal;
+				}
+
+				tris[currTriangle].i[0] = index1;
+				tris[currTriangle].i[1] = index2;
+				tris[currTriangle].i[2] = index3;
+				currTriangle++;
+			}
+
+			//*
+			if( cubeCase.capPlanes )
+			{
+				for( int plane = 0; plane < 6; plane++ )
 				{
-					// get triangle edges
-					// get cache indexes for all 3 edges
-					// if we had cache initialized - use this value
-                    int e1 = cubeCase.tris[triNum][0];
-                    int e2 = cubeCase.tris[triNum][1];
-                    int e3 = cubeCase.tris[triNum][2];
-
-                    int index1 = _cacheVertex( vert, x,y,z, e1 );
-                    int index2 = _cacheVertex( vert, x,y,z, e2 );
-                    int index3 = _cacheVertex( vert, x,y,z, e3 );
-
-					// get 3 resulting vertices
-                    Vector3F vec1 = vert[index1].pos;
-                    Vector3F vec2 = vert[index2].pos;
-                    Vector3F vec3 = vert[index3].pos;
-
-                    Vector3F  delta1 = vec2 - vec1;
-                    Vector3F  delta2 = vec3 - vec1;
-
-					//	compute face normal
-                    Vector3F  normal;
-                    getCrossProduct( delta1.f, delta2.f, normal.f );
-
-                    // Check for 0 or we get NaN errors
-                    if( normal.isNotZero() ) {
-						normal.normalise();
-
-						// add normal to the cache
-						vert[index1].norm += normal;
-						vert[index2].norm += normal;
-						vert[index3].norm += normal;
-                    }
-
-                    tris[currTriangle].i[0] = index1;
-                    tris[currTriangle].i[1] = index2;
-                    tris[currTriangle].i[2] = index3;
-                    currTriangle++;
-                }
-
-				//*
-				if( cubeCase.capPlanes )
-				{
-					for( int plane = 0; plane < 6; plane++ )
+					int p = cubeCase.capPlanesTab[plane];
+					if( p != 0 )
 					{
-						int p = cubeCase.capPlanesTab[plane];
-						if( p != 0 )
+						int offset = _cacheOffsetFromPlane( x, y, z, plane );
+
+						std::map<int,int>::iterator cacheIter = capPlaneCache.find(offset);
+						if( cacheIter != capPlaneCache.end() )
 						{
-							int offset = _cacheOffsetFromPlane( x, y, z, plane );
+							int p2 = cacheIter->second;
+							capPlaneCache.erase( offset );
 
-							std::map<int,int>::iterator cacheIter = capPlaneCache.find(offset);
-							if( cacheIter != capPlaneCache.end() )
-							{
-								int p2 = cacheIter->second;
-								capPlaneCache.erase( offset );
-
-								if( p2 //!=
-										== p )
-								{
-									int sign = p;	//0;
-
-//									int planeSign = 0;
-//									if( plane % 2 )
-//										planeSign = 1;
-//									else
-//										planeSign = -1;
-//									sign = planeSign * -p;
-
-//											printf( "x:%d y:%d z:%d p: %d, p2: %d\n", x,y,z, p,p2 );
-//									if( p == 1 )
-										_capPlane( vert, tris, x,y,z, plane, sign );
-//									else if( p == -1 )
-//										_capPlane( vert, tris, x,y,z, plane, sign );
-//									else
-//										throw "fdgdf";
-								}
-								else {
-									int x = 5;
-								}
-							}
-							else {
-								capPlaneCache.insert( std::pair<int,int>(offset, p) );
-							}
-
+							if( p2 == p )
+								_capPlane( vert, tris, x,y,z, plane, p );
 						}
-
+						else {
+							capPlaneCache.insert( std::pair<int,int>(offset, p) );
+						}
 					}
-				}//*/
-			}	// cur tri
-		}
+				}
+			}//*/
+		}	// cur tri
     }	//	for
 
 	int	lenVector[10] = {0};
@@ -187,7 +161,6 @@ int MarchingCubes::fillInTrianglesIndexed( MarchingCubes::Vertex* vert, int maxV
     vertexNum = currVert;
     triNum = currTriangle;
 
-//static  int ii = 0;	if( !ii ) {	ii ++;	printf( "currTriangle:%d currVert:%d", currTriangle, currVert );}
     return currTriangle;
 }
 
@@ -197,11 +170,7 @@ int MarchingCubes::_capPlane( MarchingCubes::Vertex* vert, MarchingCubes::Triang
 {
 	int* edges = planeToEdge[plane];
 
-	// TODO: just dirty hack for now
-//	if( plane == 2 || plane == 3 )	;
-//	else							side = 1 - side;
-
-	int index[4];	// = {-1};
+	int index[4];
 	for( int i = 0; i < 4; i++ )
 		index[i] = _cacheVertex( vert, x,y,z, edges[i] );
 
@@ -240,7 +209,6 @@ int MarchingCubes::_capPlane( MarchingCubes::Vertex* vert, MarchingCubes::Triang
 	vert[ index[2] ].norm += normal2;
 	vert[ index[3] ].norm += normal2;
 
-// TODO: sprawdzic te ify
 	if( side == -1 ) {
 		tris[currTriangle].i[0] = index[0];
 		tris[currTriangle].i[1] = index[1];
@@ -294,3 +262,151 @@ MarchingCubes::Vector3F MarchingCubes::getVertexFromEdge( int edgeNum )
 
     return result;
 }
+
+/*void generateTrianglesVBO() {
+//    glGenBuffersARB( 1, &trianglesVertexBuffer );
+    glGenBuffers( 1, &trianglesVertexBuffer );
+}
+void deleteTrianglesVBO() {
+    glDeleteBuffers(1, &trianglesVertexBuffer );
+}
+void generateTrianglesIndexedVBO() {
+    glGenBuffers( 1, &trianglesIndexedVertexBuffer );
+    glGenBuffers( 1, &trianglesIndexedIndexBuffer );
+}
+void deleteTrianglesIndexedVBO() {
+    glDeleteBuffers(1, &trianglesIndexedVertexBuffer );
+    glDeleteBuffers(1, &trianglesIndexedIndexBuffer );
+}
+
+
+int currentTriangleNum = 0;
+int currentTriangleIndexedNum  = 0;
+
+void fillTrianglesVBO( MarchingCubes::TriangleF* tris, int triNum ) {
+    glBindBuffer( GL_ARRAY_BUFFER, trianglesVertexBuffer );
+    glBufferData( GL_ARRAY_BUFFER, triNum*sizeof(MarchingCubes::TriangleF), tris, GL_DYNAMIC_DRAW );  //
+                                                                                  //  GL_STATIC_DRAW );
+    currentTriangleNum = triNum;
+}
+
+void fillTrianglesIndexedVBO( MarchingCubes::Vertex* vert, int vertexNumber, MarchingCubes::TriangleI* tris, int triangleNumber ) {
+
+    glBindBuffer( GL_ARRAY_BUFFER, trianglesIndexedVertexBuffer );
+    glBufferData( GL_ARRAY_BUFFER, vertexNumber*sizeof(MarchingCubes::Vertex), vert, GL_DYNAMIC_DRAW );  //
+                                                                                  //  GL_STATIC_DRAW );
+    glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, trianglesIndexedIndexBuffer );
+    glBufferData( GL_ELEMENT_ARRAY_BUFFER, triangleNumber*sizeof(MarchingCubes::TriangleI), tris, GL_DYNAMIC_DRAW );
+
+    currentTriangleIndexedNum = triangleNumber;
+}
+
+
+void drawTrianglesVBO() {
+    glBindBuffer( GL_ARRAY_BUFFER, trianglesVertexBuffer );
+
+    glEnableClientState( GL_VERTEX_ARRAY );
+    glEnableClientState( GL_NORMAL_ARRAY );
+
+    glVertexPointer( 3, GL_FLOAT, sizeof(MarchingCubes::Vertex), NULL ); //(GLvoid*)(verts[0].pos));
+    glNormalPointer( GL_FLOAT, sizeof(MarchingCubes::Vertex), (GLvoid*)(sizeof(GLfloat)*3) );
+
+    if( wireframe )     glDrawArrays( GL_LINES, 0, currentTriangleNum*3 );
+    else                glDrawArrays( GL_TRIANGLES, 0, currentTriangleNum*3 );
+
+    glDisableClientState( GL_VERTEX_ARRAY );
+    glDisableClientState( GL_NORMAL_ARRAY );
+}
+
+void drawTrianglesIndexedVBO()
+{
+    glBindBuffer( GL_ARRAY_BUFFER, trianglesIndexedVertexBuffer );
+    glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, trianglesIndexedIndexBuffer );
+
+    glEnableClientState( GL_VERTEX_ARRAY );
+    glEnableClientState( GL_NORMAL_ARRAY );
+
+    glVertexPointer( 3, GL_FLOAT, sizeof(MarchingCubes::Vertex), NULL ); //(GLvoid*)(verts[0].pos));
+    glNormalPointer( GL_FLOAT, sizeof(MarchingCubes::Vertex), (GLvoid*)(sizeof(float    //GLfloat
+                                                                                    )*3) );
+
+//    glVertexPointer( 3, GL_FLOAT, sizeof(AxisVert), NULL ); //(GLvoid*)(verts[0].pos));
+  //  glColorPointer( 3, GL_UNSIGNED_BYTE, sizeof(AxisVert), (GLvoid*)(sizeof(GLfloat)*3));
+
+    if( wireframe ){
+//        for( int i = 0; i < currentTriangleIndexedNum; i++ )
+  //      glDrawElements( GL_LINE_LOOP, 3, GL_UNSIGNED_INT, (void*)0);
+                        glDrawElements( GL_LINES, currentTriangleIndexedNum*3, GL_UNSIGNED_INT, (void*)0);
+    }
+    else                glDrawElements( GL_TRIANGLES, currentTriangleIndexedNum*3, GL_UNSIGNED_INT, (void*)0);
+
+    glDisableClientState( GL_VERTEX_ARRAY );
+    glDisableClientState( GL_NORMAL_ARRAY );
+}*/
+/*void generateAxesVBO() {
+    const GLfloat axExt = 40.0f;
+
+    AxisVert    verts[6] = {
+    { 0.0f, 0.0f, 0.0f, 255, 255, 255 },
+    { axExt, 0.0f, 0.0f, 255, 0, 0 },
+    { 0.0f, 0.0f, 0.0f, 255, 255, 255 },
+    { 0.0f, axExt, 0.0f, 0, 255, 0 },
+    { 0.0f, 0.0f, 0.0f, 255, 255, 255 },
+    { 0.0f, 0.0f, axExt, 0, 0, 255 },
+    };
+
+    glGenBuffersARB( 1, &axesVertexBuffer );
+    glBindBuffer( GL_ARRAY_BUFFER, axesVertexBuffer );
+    glBufferData( GL_ARRAY_BUFFER, sizeof(verts), verts, GL_DYNAMIC_DRAW);  //STATIC_DRAW);
+}
+void deleteAxesVBO() {
+    glDeleteBuffers(1, &axesVertexBuffer);
+    glDeleteBuffers(1, &axesIndexBuffer);
+}*/
+
+/*
+void drawAxesVBO()
+{
+    glBindBuffer( GL_ARRAY_BUFFER, axesVertexBuffer );
+
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_COLOR_ARRAY);
+
+    glVertexPointer( 3, GL_FLOAT, sizeof(AxisVert), NULL ); //(GLvoid*)(verts[0].pos));
+    glColorPointer( 3, GL_UNSIGNED_BYTE, sizeof(AxisVert), (GLvoid*)(sizeof(GLfloat)*3));
+
+    glDrawArrays( GL_LINES, 0, 6 );
+
+    glDisableClientState(GL_VERTEX_ARRAY);
+    glDisableClientState(GL_COLOR_ARRAY);
+
+    glBindBuffer( GL_ARRAY_BUFFER, axesVertexBuffer );
+    glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, axesIndexBuffer );
+
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_COLOR_ARRAY);
+
+    glVertexPointer( 3, GL_FLOAT, sizeof(AxisVert), NULL ); //(GLvoid*)(verts[0].pos));
+    glColorPointer( 3, GL_UNSIGNED_BYTE, sizeof(AxisVert), (GLvoid*)(sizeof(GLfloat)*3));
+
+    glDrawElements( GL_LINES, 6, GL_UNSIGNED_INT, (void*)0);
+
+    glDisableClientState(GL_VERTEX_ARRAY);
+    glDisableClientState(GL_COLOR_ARRAY);
+}*/
+/*void drawVBO()
+{
+    setupLight( lighting );
+    setView();
+
+//    drawTrianglesVBO();
+    drawTrianglesIndexedVBO();
+
+    print = false;
+
+    setupLight( false );
+    drawAxesVBO();
+
+    glLoadIdentity ();
+    glColor3f( 1, 1, 1 );
+}*/

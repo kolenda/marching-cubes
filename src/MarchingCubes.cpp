@@ -154,16 +154,6 @@ void MarchingCubes::setValues( Cube2& cube )
         vertex[v] = cube.getVec(v);
 }
 
-//	TODO: to remove - use cf
-void MarchingCubes::setOffsets( float sizex, float sizey, float sizez )
-{
-	sizeX = sizex;
-	sizeY = sizey;
-	sizeZ = sizez;
-
-	sizePlane = sizeX * sizeY;
-}
-
 
 int MarchingCubes::_getEdgeAxis( int edge )
 {

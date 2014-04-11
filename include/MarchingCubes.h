@@ -1,7 +1,7 @@
 /*
     MarchingCubes - main class for all Marching Cubes computations
     Author: Karol Herda
-    Web:    http://kolenda.vipserv.org/algorithmic-marching-cubes/
+    Web:    http://kolenda.me/algorithmic-marching-cubes/
     Date:   12-03-2013
 
     Defines basic data structures and algorithms used to compute geometry
@@ -19,6 +19,7 @@
 
     and ask for triangles for this case:
 
+TODO:	fix it
         MarchingCubes::TriangleF     tris[4];
         int triNum = march.fillInTriangles( tris );
 
@@ -72,14 +73,6 @@ public:
 
             return *this;
         }
-/*        Vector3F& operator*= (const float f)
-        {
-            f[0] = f[0] * f;
-            f[1] *= f;
-            f[2] *= f;
-
-            return *this;
-        }*/
         Vector3F operator- (Vector3F& v1) {
             Vector3F res;
             res.f[0] = f[0] - v1.f[0];
@@ -93,18 +86,16 @@ public:
 			f[1] = y;
 			f[2] = z;
 		}
+        float length() {
+            float lenSquare = f[0]*f[0] + f[1]*f[1] + f[2]*f[2];
+            float len = sqrtf(lenSquare);
+            return len;
+        }
         void normalise() {
-            float len = f[0]*f[0] + f[1]*f[1] + f[2]*f[2];
-            float lenSqrRoot = sqrtf(len);
-            float mulFactor = 1 / lenSqrRoot;
+            float mulFactor = 1 / length();
             f[0] *= mulFactor;
             f[1] *= mulFactor;
             f[2] *= mulFactor;
-        }
-        float length() {
-            float len = f[0]*f[0] + f[1]*f[1] + f[2]*f[2];
-            float lenSqrRoot = sqrtf(len);
-            return lenSqrRoot;
         }
         bool isNotZero() {
 			return f[0] != 0.0f || f[1] != 0.0f || f[2] != 0.0f;
@@ -115,10 +106,12 @@ public:
         Vector3F    norm;
         int		used;
     };
+
     // Triangle described as 3 vector positions
     struct  TriangleF {
         Vertex  v[3];
     };
+
     // Triangle represented by 3 vector indices - will be needed for vertex buffers (some day;))
     struct  TriangleI {
         int i[3];
@@ -126,20 +119,20 @@ public:
             return i[index];
         };
     };
+
     // Description of one combination of corners
-    //  stores its own index, number of triangles with triangle table, and normal used during data generation
+    //  stores its own index, number of triangles with triangle table,
+    //	and normal used during data generation
+    //	it also have specific plane flags for ambiguous cases resolution
     struct  MarchingCubesCase {
 		int				index;
 		int				numTri;
-		TriangleI		tris[25];
-        Vector3F		normal[25];
-//      TriangleI tris[10];
-  //      Vector3F normal;
-		unsigned char	capPlanes;
-		char	capPlanesTab[6];
-    };
+		TriangleI		tris[8];
+        Vector3F		normal[8];
 
-	void	setOffsets( float sizex, float sizey, float sizez );
+		unsigned char	capPlanes;
+		char			capPlanesTab[6];
+    };
 
 private:
     // main table storing all geometry data, it's generated during initialization and used for rendering
@@ -176,8 +169,6 @@ int currVert;
     void        _getPlaneEdges( int v1, int v2, int edges[4] );
 //	void		_getPlaneEdges( int plane, int edges[4] );
 
-    // TODO delete?
-    int         _capSingleVertexPlane( MarchingCubesCase& cubeCase, int v1, int v2 );
 	int			_capPlane( MarchingCubes::Vertex* vert, MarchingCubes::TriangleI* tris, int x, int y, int z, int plane, int side );
 
 
@@ -280,7 +271,8 @@ public:
     }
 
     // copy triangles for current case
-    int     fillInTriangles( MarchingCubes::TriangleF tris[8] );
+//    int     fillInTriangles( MarchingCubes::TriangleF tris[8] );
+
 //    int     fillInAllTriangles( MarchingCubes::TriangleF* tris, int maxTris );
     int     fillInTrianglesIndexed( MarchingCubes::Vertex* vert, int maxVert, MarchingCubes::TriangleI* tris, int maxTris, int& vertexNum, int& triNum );
 

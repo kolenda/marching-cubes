@@ -295,7 +295,6 @@ if( i == 49 ) {
     return 1;
 }
 
-
 int MarchingCubes::_findSingleVertexTriangles( int code )
 {
     int counter = 0;
@@ -354,12 +353,6 @@ int MarchingCubes::_findSingleVertexTriangles( int code )
 				singleVertexMap[v] = true;
 				cubeCase.numTri++;
 				counter++;
-
-				for( int i = 0; i < v; i++ ) {
-					if( singleVertexMap[i] && _twoBitsDiff(v,i) ) {
-	;//					_capSingleVertexPlane( triangleTable[code], i, v );
-					}
-				}
 			}
 		}//*/
     }
@@ -374,8 +367,8 @@ int MarchingCubes::_findEdgeTriangles( int code )
     int signTab[8];
     _codeToSignTable( code, signTab );
 
-    for( int e = 0; e < 12; e++ ) {
-
+    for( int e = 0; e < 12; e++ )
+	{
         bool failed = false;
         int v1 = edgeToVertex[e][0];
         int v2 = edgeToVertex[e][1];
@@ -434,12 +427,13 @@ int MarchingCubes::_findHalfSplit( int code )
     _codeToSignTable( code, signTab );
     // signTab - signs for all corners
 
-    for( int axis = 0; axis < 3; axis++ ) {
+    for( int axis = 0; axis < 3; axis++ )
+	{
         bool casePosFail = false;
         bool caseNegFail = false;
 
-        for( int v = 0; v < 8; v++ ) {
-
+        for( int v = 0; v < 8; v++ )
+		{
             if( _vertexIsNegByAxis(v,axis) ) {
                 if( signTab[v] < 0 ) {
                     caseNegFail = true;
@@ -553,7 +547,6 @@ int MarchingCubes::_findTripleVertex( int code )
                 signTab[vRefl12] > 0 )
             {
                 MarchingCubesCase& cubeCase = triangleTable[code];
-//                cubeCase.normal = _getNormalFromBits( v );
                 cubeCase.normal[cubeCase.numTri] = _getNormalFromBits( v );
                 cubeCase.tris[ cubeCase.numTri ][0] = _findEdge(vRefl2, vRefl2A);
                 cubeCase.tris[ cubeCase.numTri ][1] = _findEdge(vRefl1, vRefl1A);
@@ -584,7 +577,6 @@ int MarchingCubes::_findTripleVertex( int code )
                     signTab[vRefl12] < 0 )
             {
                 MarchingCubesCase& cubeCase = triangleTable[code];
-//                cubeCase.normal = _getNormalFromBits( 7-v );
                 cubeCase.normal[cubeCase.numTri] = _getNormalFromBits( 7-v );
                 cubeCase.tris[ cubeCase.numTri ][0] = _findEdge(vRefl2, vRefl2A);
                 cubeCase.tris[ cubeCase.numTri ][1] = _findEdge(vRefl1, vRefl12);
@@ -749,9 +741,7 @@ int MarchingCubes::_findSnake( int code )
 
 float getComponentByIndex( MarchingCubes::Vector3F vec, int index )
 {
-//	if( index >= 0 && index < 3 )
-		return vec.f[index];
-//	return 0;
+	return vec.f[index];
 }
 
 int MarchingCubes::_selectCapPlanes( int code )
@@ -839,41 +829,12 @@ if( code == 150 && plane == 1 ) {
 
 					break;
 				}
-
-
-
-
-
-/*
-				// check each combination: tri corner and edge on this plane
-				for( int ii = 0; ii < 4; ii++ )
-				for( int jj = 0; jj < 3; jj++ )
-					if( cubeCase.tris[tri].i[jj] == planeEdges[ii] )
-						edgesSet.insert( planeEdges[ii] );
-
-				int c = 0;
-				for( int iii = 0; iii < 3; iii++ )
-					if( cubeCase.tris[tri].i[iii] == planeEdges[0] ||
-						cubeCase.tris[tri].i[iii] == planeEdges[2] )
-										c++;
-
-				if( c > 1 )
-					side = true;
-
-				if( edgesSet.size() == 4 )
-				{
-					int triOffset = tri * CAP_TRI_OFFSET;
-
-					if( side )
-						triangleTable[code].capPlanesTab[plane] = 2 + CAP_TRI_OFFSET;
-					else
-						triangleTable[code].capPlanesTab[plane] = 1 + CAP_TRI_OFFSET;
-
-					printf( "cap plane (4) -> case:%d plane:%d\n", code, plane );
-				}*/
 			}
 		}
 	}
+
+	// if any of the planes can be capped - set the main cap flag
+	// it will be easier during rendering to check one flag instead of 6
 	for( int i = 0; i < 6; i++ ) {
 		if( triangleTable[code].capPlanesTab[i] != 0 ) {
 			triangleTable[code].capPlanes = true;
@@ -886,7 +847,8 @@ int MarchingCubes::_fixTrianglesNormals( int code )
 {
     MarchingCubesCase& cubeCase = triangleTable[code];
     int counter = 0;
-    for( int t = 0; t < cubeCase.numTri; t++ ) {
+    for( int t = 0; t < cubeCase.numTri; t++ )
+	{
         int e1 = cubeCase.tris[t][0];
         int e2 = cubeCase.tris[t][1];
         int e3 = cubeCase.tris[t][2];
@@ -910,30 +872,3 @@ int MarchingCubes::_fixTrianglesNormals( int code )
     }
     return counter;
 }
-
-
-int MarchingCubes::_capSingleVertexPlane( MarchingCubesCase& cubeCase, int v1, int v2 )
-{
-    int edges[4] = {-1};
-    _getPlaneEdges( v1, v2, edges );
-
-    int counter = 0;
-    Vector3F normal = _getNormalFromBits( v1 );
-
-    cubeCase.normal[cubeCase.numTri] = normal;
-    cubeCase.tris[ cubeCase.numTri ][0] = edges[0];
-    cubeCase.tris[ cubeCase.numTri ][1] = edges[1];
-    cubeCase.tris[ cubeCase.numTri ][2] = edges[2];
-    cubeCase.numTri++;
-
-    cubeCase.normal[cubeCase.numTri] = normal;
-    cubeCase.tris[ cubeCase.numTri ][0] = edges[3];
-    cubeCase.tris[ cubeCase.numTri ][1] = edges[1];
-    cubeCase.tris[ cubeCase.numTri ][2] = edges[2];
-    cubeCase.numTri++;
-
-    counter += 2;
-
-    return counter;
-}
-
