@@ -104,11 +104,6 @@ int MarchingCubes::_fixPlaneEdgesNormal( int plane, int planeEdges[4] )
 	for( int i = 0; i < 3; i++ )
 		vec[i] = getHalfEdge( planeEdges[i] );
 
-//	Vector3F  delta1 = vec[1] - vec[0];
-//	Vector3F  delta2 = vec[2] - vec[0];
-//	Vector3F  normal;
-//	getCrossProduct( delta1.f, delta2.f, normal.f );
-
 	Vector3F  normal = getTriangleNormal( vec[0], vec[1], vec[2] );
 
 	int axis = _planeToAxis( plane );
@@ -225,7 +220,7 @@ int MarchingCubes::_getEdgeBySymmetry( int edge, int axis )
 	return res;
 }
 
-void MarchingCubes::_getPlaneEdges( int v1, int v2, int edges[4] )
+/*void MarchingCubes::_getPlaneEdges( int v1, int v2, int edges[4] )
 {
     int eCounter = 0;
 
@@ -239,7 +234,8 @@ void MarchingCubes::_getPlaneEdges( int v1, int v2, int edges[4] )
         }
 
     assert( eCounter == 4 );
-}
+}*/
+
 /*void MarchingCubes::_getPlaneEdges( int plane, int edges[4] )
 {
     int eCounter = 0;
@@ -287,9 +283,7 @@ int MarchingCubes::generateTriangles()
         if( triangleTable[i].index < 1 )
 		{
             triangleTable[i].index = i;
-if( i == 49 ) {
-	int x = 5;
-}
+
             int tris = 0;
             tris += _findSingleVertexTriangles( i );
             tris += _findEdgeTriangles( i );
@@ -298,7 +292,7 @@ if( i == 49 ) {
             tris += _findFourVertex( i );
             tris += _findSnake( i );
 
-            int fixed = _fixTrianglesNormals( i );
+            _fixTrianglesNormals( i );
 
 			_selectCapPlanes( i );
         }
@@ -769,7 +763,7 @@ int MarchingCubes::_selectCapPlanes( int code )
 
 			int* planeEdges = planeToEdge[plane];
 
-			bool side = false;
+//			bool side = false;
 			std::set<int> edgesSet;
 			MarchingCubesCase& cubeCase = triangleTable[code];
 
@@ -791,19 +785,12 @@ int MarchingCubes::_selectCapPlanes( int code )
 				if( planeVertCount == 2 ) {
 					triangleOnPlaneCount++;
 				}
-				if( triangleOnPlaneCount == 2 ) {
-if( code == 150 && plane == 1 ) {
-	int x =5;
-}
-
+				if( triangleOnPlaneCount == 2 )
+				{
 					Vector3F verts[3];
 					for( int v = 0; v < 3; v++ )
 						verts[v] = getHalfEdge( triI.i[v] );
 
-//					Vector3F  delta1 = verts[1] - verts[0];
-//					Vector3F  delta2 = verts[2] - verts[0];
-//					Vector3F  normal;
-//					getCrossProduct( delta1.f, delta2.f, normal.f );
 					Vector3F  normal = getTriangleNormal( verts[0], verts[1], verts[2] );
 
 					float val = getComponentByIndex( normal, axis );
@@ -866,10 +853,6 @@ int MarchingCubes::_fixTrianglesNormals( int code )
         Vector3F v2 = getHalfEdge(e2);
         Vector3F v3 = getHalfEdge(e3);
 
-//        Vector3F delta1 = v2 - v1;
-//        Vector3F delta2 = v3 - v1;
-//        Vector3F normal;
-//        getCrossProduct( delta1.f, delta2.f, normal.f );
 		Vector3F  normal = getTriangleNormal( v1, v2, v3 );
 
         if( dotProduct(normal, cubeCase.normal[t]) < 0 ) {
@@ -878,7 +861,6 @@ int MarchingCubes::_fixTrianglesNormals( int code )
             cubeCase.tris[t][2] = tmp;
             counter++;
         }
-        else {     int x = 5;   }
     }
     return counter;
 }

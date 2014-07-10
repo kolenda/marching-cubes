@@ -5,6 +5,8 @@
     Date:   12-03-2013
 
     Contains 3D field of float values and manages memory allocation, setting grid size, etc.
+
+    TODO: Extract simple interface from class
 */
 #ifndef VOXELFIELD_H_INCLUDED
 #define VOXELFIELD_H_INCLUDED
@@ -40,6 +42,10 @@ public:
     }
 };*/
 
+/*
+    Cube2 - the new version, aware of voxel field size
+    takes entire voxel field and returns particular cube values
+*/
 class Cube2 {
 private:
     float*   vec;
@@ -60,7 +66,7 @@ public:
     {
 		int offset = 0;
 		if( i & 0x01 )
-			offset ++;	//= sizeX;
+			offset ++;
 		if( i & 0x02 )
 			offset += sizeX;
 		if( i & 0x04 )
@@ -102,18 +108,6 @@ public:
 		if( v111 * v110 < 0.0f )
 			return true;
 
-/*    	for( int i = 1; i < 8; i++ ) {
-    		int offset = 0;
-    		if( i & 0x01 )
-				offset ++;	//= sizeX;
-    		if( i & 0x02 )
-				offset += sizeX;
-    		if( i & 0x04 )
-				offset += sizeX*sizeY;
-
-			if( vec[0] * vec[offset] < 0.0f )
-				return true;
-    	}*/
         return false;
     }
 };
@@ -146,8 +140,6 @@ class VoxelField   {
 	}
 
 
-	double	noise( double x, double y );
-
 public:
     VoxelField();
     VoxelField( int x, int y, int z );
@@ -158,12 +150,11 @@ public:
 
     bool _outsideOf( int val, int min, int max );
     bool setVal( int x, int y, int z, float val );
-    void	//bool
-		getVal( int x, int y, int z, float* val );
+    void getVal( int x, int y, int z, float* val );
 
     void    setAllValues( float val );
 
-    // this method gets proper values forming a cube and returns it in a helper class
+    // this method gets proper values forming an (x,y,z) cube and returns it in a helper class
     Cube2    getCube( int x, int y, int z );
 
     // Function to create object representing a sphere
@@ -171,6 +162,7 @@ public:
     //      but mathematically it's just a linear function of distance from center
     void addSphere( float fx, float fy, float fz, float frad );
 
+	// debug methods creating sample data
 	void	setAmbiguousCase( int num );
 	void	setSnake( int num );
 	void	setSpheres( float phase );

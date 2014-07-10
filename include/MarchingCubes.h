@@ -58,8 +58,9 @@ public:
     	Vector3F() {
 			Vector3F( 0.0f, 0.0f, 0.0f );
 		}
-        Vector3F& operator+ (Vector3F& v1) {
-            Vector3F res;
+        Vector3F& operator+ (Vector3F& v1)
+        {
+			Vector3F res;
             res.f[0] = f[0] + v1.f[0];
             res.f[1] = f[1] + v1.f[1];
             res.f[2] = f[2] + v1.f[2];
@@ -109,18 +110,19 @@ public:
 			return f[0] != 0.0f || f[1] != 0.0f || f[2] != 0.0f;
         }
     };
+
     struct Vertex {
         Vector3F    pos;
         Vector3F    norm;
-        int		used;
+        int			used;	// Debug variable, TODO: remove
     };
 
-    // Triangle described as 3 vector positions
+    // Triangle represented as 3 vector positions
     struct  TriangleF {
         Vertex  v[3];
     };
 
-    // Triangle represented by 3 vector indices - will be needed for vertex buffers (some day;))
+    // Triangle represented by 3 vector indices - will be needed for vertex buffers
     struct  TriangleI {
         int i[3];
         int& operator[] (int index) {
@@ -143,48 +145,68 @@ public:
     };
 
 private:
+    VoxelField& field;
+
     // main table storing all geometry data, it's generated during initialization and used for rendering
-    MarchingCubesCase    triangleTable[256];
+    MarchingCubesCase	triangleTable[256];
+
     // stores statistics for each case telling how many times it was used
     int                 usageStats[256];
+
     // temporary table of corner values
     float               vertex[8];
 
-    // positions of all corners
+    // positions of all corners in a cube
     Vector3F            vertexOffset[8];
+
     // definition of edges, we have 12 of them, each is stored as 2 vertex indices
+    // they will be also computed at runtime
     int                 edgeToVertex[12][2];
+
+    // for each side of a cube we store 4 vertices belonging to it
 	int					planeToVertex[6][4];
+
+    // for each side of a cube we store 4 edges belonging to it
 	int					planeToEdge[6][4];
 
-int currTriangle;
-int currVert;
+
+	// index of the first free triangle in buffer
+	int					currentTriangle;
+
+	// index of the first free vertex in cache
+	int					currentVertex;
 
     // returns index of axis parallel to the edge
     int         _getEdgeAxis( int edge );
-    // returns corner reflected by the given axis
-    int         _getVertexBySymmetry( int vertex, int axis );
-    // returns edge reflected by the given axis
-    int         _getEdgeBySymmetry( int edge, int axis );
-    // check if params differ by 1 and only 1 bit (checks only 3 first bits)
-    bool        _oneBitDiff( int v1, int v2 );
-    // check if params differ by 2 and only 2 bits (checks only 3 first bits)
-    bool        _twoBitsDiff( int v1, int v2 );
+
     // gets 4 edges parallel to the axis
     void        _getEdgesAlongAxis( int axis, int edges[4] );
 
+    // returns corner reflected by the given axis
+	int         _getVertexBySymmetry( int vertex, int axis );
 
-    void        _getPlaneEdges( int v1, int v2, int edges[4] );
-//	void		_getPlaneEdges( int plane, int edges[4] );
+    // returns edge reflected by the given axis
+    int         _getEdgeBySymmetry( int edge, int axis );
+
+    // check if params differ by 1 and only 1 bit (checks only 3 first bits)
+    bool        _oneBitDiff( int v1, int v2 );
+
+    // check if params differ by 2 and only 2 bits (checks only 3 first bits)
+    bool        _twoBitsDiff( int v1, int v2 );
+
 
 	int			_capPlane( MarchingCubes::Vertex* vert, MarchingCubes::TriangleI* tris, int x, int y, int z, int plane, int side );
 
 
 //  ++startup data++
+	// create vertex helper table
     void        _fillVertices();
+	// create edges helper tables
     void        _fillEdges();
+	// create planes helper tables
     void		_fillPlanes();
 
+	// returns index of edge connecting two vertices
     int         _findEdge( int v1, int v2 );
 //  --startup data--
 
@@ -192,6 +214,7 @@ int currVert;
     // main generate method
     int         generateTriangles();
 
+	// methods for finding all geometry cases
     int         _findSingleVertexTriangles( int code );
     int         _findEdgeTriangles( int code );
     int         _findHalfSplit( int code );
@@ -199,12 +222,13 @@ int currVert;
     int         _findFourVertex( int code );
     int         _findSnake( int code );
 	int			_selectCapPlanes( int code );
+
     // fixes triangles direction between CW and CCW
     int         _fixTrianglesNormals( int code );
 //  --triangle table generation--
 
+	// some internal helper methods
 	int			_fixPlaneEdgesNormal( int plane, int planeEdges[4] );
-
 
 	bool		_vertexIsAtAxisSide( int v, int axis, int sign );
 
@@ -216,26 +240,27 @@ int currVert;
 
     // gets an interpolated vector of given edge, based on its corner values
     Vector3F    getVertexFromEdge( int edgeNum );
+
     // gets a center of given edge
     Vector3F    getHalfEdge( int edgeNum );
 
     void        _codeToSignTable( int code, int* tab );
     bool        _vertexIsNegByAxis( int v, int axis );
-    Vector3F   _getNormalFromBits( int bits );
+    Vector3F	_getNormalFromBits( int bits );
 
     // prints all values from triangles table - for debug purposes
     void        printTable();
 
-    VoxelField& field;
-
 
 	//	tools
-	inline bool _differentSign( int a, int b );
-	//inline
+	bool _differentSign( int a, int b );
 	bool _sameSign( int a, int b );
+
 	int _getBitNum( unsigned short number );
 
+
 //  CACHE
+
 //	cache stores int value for every edge in the vertex field
     // alloc cache x*y*z
     int*    _cacheAlloc( int fieldX, int fieldY, int fieldZ );
@@ -244,19 +269,25 @@ int currVert;
     // set cache to -1
     void    _cacheClear();
 
+	// add a new vertex to the cache or return existing one
     int     _cacheVertex( MarchingCubes::Vertex* vert, int x, int y, int z, int e );
+
     // params: cube position (x,y,z), edge index
     // returns: cache index for given edge
     int     _cacheOffsetFromCubeEdge( int x, int y, int z, int e );
+    // params: cube position (x,y,z), plane index
+    // returns: cache index for given plane
 	int		_cacheOffsetFromPlane( int x, int y, int z, int plane );
 
 	// cache field int[]
     int*    cacheField;
+
     // cache size x, y, z
     int     cacheSizeX;
     int     cacheSizeY;
     int     cacheSizeZ;
-    // cache size x*y*z * 4[int]
+
+    // cache size x*y*z * 4
     int     cacheSize;
 
     int     vertexNum;
@@ -264,29 +295,31 @@ int currVert;
 public:
     MarchingCubes( VoxelField& f );
 
-    // inits entire geometry
+    // init entire geometry
     void init();
 
     // sets corner values
-    void setValues( Cube2& cube );	//float vert[8] );
+    void setValues( Cube2& cube );
 
-    MarchingCubesCase&    getCase( int code ){
+	// get Marching Cubes Case by index
+    MarchingCubesCase&    getCase( int code ) {
         return triangleTable[code];
     }
-    MarchingCubesCase&    getCaseFromValues(){
+	// get Marching Cubes Case by values
+    MarchingCubesCase&    getCaseFromValues() {
         int code = _bitsToCode( vertex );
         return getCase( code );
     }
 
-    // copy triangles for current case
-//    int     fillInTriangles( MarchingCubes::TriangleF tris[8] );
-
-//    int     fillInAllTriangles( MarchingCubes::TriangleF* tris, int maxTris );
+	// fill in geometry data for current frame
     int     fillInTrianglesIndexed( MarchingCubes::Vertex* vert, int maxVert, MarchingCubes::TriangleI* tris, int maxTris, int& vertexNum, int& triNum );
 
-    int     getUsageStats( int i ) { return usageStats[i]; }
+	// get usage statistics for a given case
+    int     getUsageStats( int i ) {
+    	return usageStats[i];
+	}
 
-
+	// the helper method to compute triangle normal
 	static	Vector3F	getTriangleNormal( const Vector3F& v0, const Vector3F& v1, const Vector3F& v2 );
 
     // just some math helpers to avoid any deps

@@ -11,7 +11,7 @@
 #include "MarchingCubes.h"
 
 //	tools
-inline bool MarchingCubes::_differentSign( int a, int b )
+bool MarchingCubes::_differentSign( int a, int b )
 {
     if( a >= 0 && b >= 0 )
         return false;
@@ -20,7 +20,6 @@ inline bool MarchingCubes::_differentSign( int a, int b )
     return true;
 }
 
-//inline
 bool MarchingCubes::_sameSign( int a, int b )
 {
     return !_differentSign( a, b );
@@ -77,12 +76,8 @@ void MarchingCubes::init()
     _fillPlanes();
     generateTriangles();
 
-//	int o1 = _cacheOffsetFromPlane( 0,0,0, 1 );
-//	int o2 = _cacheOffsetFromPlane( 0,0,0, 4 );
-
     printTable();
 }
-
 
 
 int MarchingCubes::_bitsToCode( float verts[8] )

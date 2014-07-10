@@ -23,15 +23,15 @@ int MarchingCubes::_cacheVertex( MarchingCubes::Vertex* vert, int x, int y, int 
 	}
 	else {
 		// allocate new vertex in vertex table
-		cacheField[cache1] = currVert;
-		Vector3F vec1 = getVertexFromEdge( e );
-		vec1.f[0] += x;
-		vec1.f[1] += y;
-		vec1.f[2] += z;
-		vert[currVert].pos = vec1;
-		vert[currVert].norm.setValue( 0.0f, 0.0f, 0.0f );
-		vert[currVert].used = 0;
-		res = currVert++;
+		cacheField[cache1] = currentVertex;
+		Vector3F vertPos = getVertexFromEdge( e );
+		vertPos.f[0] += x;
+		vertPos.f[1] += y;
+		vertPos.f[2] += z;
+		vert[currentVertex].pos = vertPos;
+		vert[currentVertex].norm.setValue( 0.0f, 0.0f, 0.0f );
+		vert[currentVertex].used = 0;
+		res = currentVertex++;
 	}
 	return res;
 }

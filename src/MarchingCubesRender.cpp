@@ -19,8 +19,8 @@ int MarchingCubes::fillInTrianglesIndexed( MarchingCubes::Vertex* vert, int maxV
 	_cacheAlloc( field.getSizeX(), field.getSizeY(), field.getSizeZ() );
 	_cacheClear();
 
-    currTriangle = 0;
-    currVert    = 0;
+    currentTriangle	= 0;
+    currentVertex	= 0;
 
     for( int x = 0; x < field.getSizeX()-1; x++ )
     for( int y = 0; y < field.getSizeY()-1; y++ )
@@ -29,7 +29,7 @@ int MarchingCubes::fillInTrianglesIndexed( MarchingCubes::Vertex* vert, int maxV
         Cube2 cube = field.getCube( x, y, z );
 		cube.setGridSize( field.getSizeX(), field.getSizeY(), field.getSizeZ() );
 
-		if( currTriangle < maxTris - 10 ) {
+		if( currentTriangle < maxTris - 10 ) {
 			TriangleF     tmpTris[10];
 			setValues( cube );
 
@@ -75,10 +75,10 @@ int MarchingCubes::fillInTrianglesIndexed( MarchingCubes::Vertex* vert, int maxV
 					vert[index3].norm += normal;
 				}
 
-				tris[currTriangle].i[0] = index1;
-				tris[currTriangle].i[1] = index2;
-				tris[currTriangle].i[2] = index3;
-				currTriangle++;
+				tris[currentTriangle].i[0] = index1;
+				tris[currentTriangle].i[1] = index2;
+				tris[currentTriangle].i[2] = index3;
+				currentTriangle++;
 			}
 
 			//*
@@ -111,7 +111,7 @@ int MarchingCubes::fillInTrianglesIndexed( MarchingCubes::Vertex* vert, int maxV
 
 //	int	lenVector[10] = {0};
 
-    for( int v = 0; v < currVert; v++ )
+    for( int v = 0; v < currentVertex; v++ )
 	{
 //		if( vert[v].norm.length() < 0.5 ) {
 //			int x = 5;
@@ -122,10 +122,10 @@ int MarchingCubes::fillInTrianglesIndexed( MarchingCubes::Vertex* vert, int maxV
         vert[v].norm.normalise();
     }
 
-    vertexNum = currVert;
-    triNum = currTriangle;
+    vertexNum = currentVertex;
+    triNum = currentTriangle;
 
-    return currTriangle;
+    return currentTriangle;
 }
 
 
@@ -202,26 +202,26 @@ int MarchingCubes::_capPlane( MarchingCubes::Vertex* vert, MarchingCubes::Triang
 	vert[ index[3] ].norm += normal2;
 
 	if( side == -1 ) {
-		tris[currTriangle].i[0] = index[0];
-		tris[currTriangle].i[1] = index[1];
-		tris[currTriangle].i[2] = index[2];
-		currTriangle++;
+		tris[currentTriangle].i[0] = index[0];
+		tris[currentTriangle].i[1] = index[1];
+		tris[currentTriangle].i[2] = index[2];
+		currentTriangle++;
 
-		tris[currTriangle].i[0] = index[1];
-		tris[currTriangle].i[1] = index[3];
-		tris[currTriangle].i[2] = index[2];
-		currTriangle++;
+		tris[currentTriangle].i[0] = index[1];
+		tris[currentTriangle].i[1] = index[3];
+		tris[currentTriangle].i[2] = index[2];
+		currentTriangle++;
 	}
 	else if( side == 1 ) {
-		tris[currTriangle].i[0] = index[0];
-		tris[currTriangle].i[1] = index[2];
-		tris[currTriangle].i[2] = index[1];
-		currTriangle++;
+		tris[currentTriangle].i[0] = index[0];
+		tris[currentTriangle].i[1] = index[2];
+		tris[currentTriangle].i[2] = index[1];
+		currentTriangle++;
 
-		tris[currTriangle].i[0] = index[1];
-		tris[currTriangle].i[1] = index[2];
-		tris[currTriangle].i[2] = index[3];
-		currTriangle++;
+		tris[currentTriangle].i[0] = index[1];
+		tris[currentTriangle].i[1] = index[2];
+		tris[currentTriangle].i[2] = index[3];
+		currentTriangle++;
 	}
 }
 
