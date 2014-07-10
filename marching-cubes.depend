@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1397177819 source:d:\dev\3d\marching-cubes\main.cpp
+1397412270 source:d:\dev\3d\marching-cubes\main.cpp
 	<GL/glew.h>
 	<GL/glut.h>
 	<iostream>
@@ -9,7 +9,7 @@
 	"include/VoxelField.h"
 	"include/MarchingCubes.h"
 
-1395274261 d:\dev\3d\marching-cubes\include\voxelfield.h
+1397412494 d:\dev\3d\marching-cubes\include\voxelfield.h
 	<vector>
 	<math.h>
 	<assert.h>
@@ -19,7 +19,7 @@
 	"VoxelField.h"
 	<math.h>
 
-1397177376 source:d:\dev\3d\marching-cubes\src\marchingcubes.cpp
+1397412405 source:d:\dev\3d\marching-cubes\src\marchingcubes.cpp
 	<set>
 	<stdio.h>
 	<string.h>
@@ -64,7 +64,7 @@
 	<X11/Xmd.h>
 	<GL/glew.h>
 
-1397221321 source:d:\dev\3d\marching-cubes\src\marchingcubesanalyze.cpp
+1404071852 source:d:\dev\3d\marching-cubes\src\marchingcubesanalyze.cpp
 	<set>
 	<stdio.h>
 	<string.h>
@@ -75,7 +75,7 @@
 	<string.h>
 	"MarchingCubes.h"
 
-1397222228 source:d:\dev\3d\marching-cubes\src\marchingcubesrender.cpp
+1397412397 source:d:\dev\3d\marching-cubes\src\marchingcubesrender.cpp
 	<set>
 	<map>
 	<stdio.h>

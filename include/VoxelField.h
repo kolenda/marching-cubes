@@ -19,7 +19,8 @@ using namespace std;
 /*
     Cube - helper class that stores 8 corners as float values
 */
-class Cube {
+
+/*class Cube {
 public:
     float   vec[8];
 public:
@@ -37,8 +38,7 @@ public:
     	}
         return false;
     }
-};
-
+};*/
 
 class Cube2 {
 private:

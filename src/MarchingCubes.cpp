@@ -147,7 +147,6 @@ void MarchingCubes::printTable()
 }
 
 
-
 void MarchingCubes::setValues( Cube2& cube )
 {
     for( int v = 0; v < 8; v++ )

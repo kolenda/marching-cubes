@@ -403,10 +403,8 @@ int MarchingCubes::_findEdgeTriangles( int code )
         if( !failed ) {
             MarchingCubesCase& cubeCase = triangleTable[code];
             if( signTab[v1] < 0 )
-//                cubeCase.normal = _getNormalFromBits(v1);
                 cubeCase.normal[cubeCase.numTri] = _getNormalFromBits(v1);
             else
-//                cubeCase.normal = _getNormalFromBits(7-v1);
                 cubeCase.normal[cubeCase.numTri] = _getNormalFromBits(7-v1);
 
             cubeCase.tris[ cubeCase.numTri ][0] = _findEdge( v1, _getVertexBySymmetry(v1,(edgeAxis+1)%3) );

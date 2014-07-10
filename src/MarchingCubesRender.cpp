@@ -1,7 +1,7 @@
 /*
     MarchingCubes - main class for all Marching Cubes computations
     Author: Karol Herda
-    Web:    http://kolenda.vipserv.org/algorithmic-marching-cubes/
+    Web:    http://kolenda.me/algorithmic-marching-cubes/
     Date:   12-03-2013
 */
 
@@ -109,16 +109,16 @@ int MarchingCubes::fillInTrianglesIndexed( MarchingCubes::Vertex* vert, int maxV
 		}	// cur tri
     }	//	for
 
-	int	lenVector[10] = {0};
+//	int	lenVector[10] = {0};
 
     for( int v = 0; v < currVert; v++ )
 	{
-		if( vert[v].norm.length() < 0.5 ) {
-			int x = 5;
-		}
-		if( vert[v].used < 10 ) {
-			lenVector[ vert[v].used ] ++;
-		}
+//		if( vert[v].norm.length() < 0.5 ) {
+//			int x = 5;
+//		}
+//		if( vert[v].used < 10 ) {
+//			lenVector[ vert[v].used ] ++;
+//		}
         vert[v].norm.normalise();
     }
 
@@ -182,7 +182,7 @@ int MarchingCubes::_capPlane( MarchingCubes::Vertex* vert, MarchingCubes::Triang
 	normal.normalise();
 	normal2.normalise();
 
-
+//TODO: fix those normals
 	Vector3F d1 = normal - normal21;
 	Vector3F d2 = normal2 - normal22;
 	if( d1.isNotZero() ||
@@ -255,7 +255,12 @@ MarchingCubes::Vector3F MarchingCubes::getVertexFromEdge( int edgeNum )
     return result;
 }
 
-/*void generateTrianglesVBO() {
+/*
+struct AxisVert {
+    GLfloat pos[3];
+    GLubyte color[3];
+};
+void generateTrianglesVBO() {
 //    glGenBuffersARB( 1, &trianglesVertexBuffer );
     glGenBuffers( 1, &trianglesVertexBuffer );
 }
